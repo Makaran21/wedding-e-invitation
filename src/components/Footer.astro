@@ -1,0 +1,40 @@
+---
+import { wedding } from '@/content/wedding';
+const { couple, date } = wedding;
+---
+<footer class="footer">
+  <div class="orn" aria-hidden="true">
+    <div class="rule-fade-r line"></div>
+    <div class="box small"></div>
+    <div class="box"></div>
+    <div class="box small"></div>
+    <div class="rule-fade-l line"></div>
+  </div>
+  <div data-reveal class="inner">
+    <div class="kh thanks">សូមអរគុណ</div>
+    <div class="en caps kick">Thank you</div>
+    <div class="orn2" aria-hidden="true">
+      <div class="rule-fade-r line2"></div>
+      <div class="box mid"></div>
+      <div class="rule-fade-l line2"></div>
+    </div>
+    <div class="kh names">{couple.groom.kh} &amp; {couple.bride.kh}</div>
+    <div class="en dots">{date.dots}</div>
+  </div>
+</footer>
+
+<style>
+  .footer { background: var(--wine-600); padding: 0 var(--inset) 46px; }
+  .orn { padding: 30px 0 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .line { width: 46px; }
+  .box { width: 9px; height: 9px; flex: none; transform: rotate(45deg); border: 1px solid var(--gold); }
+  .box.small { width: 6px; height: 6px; opacity: .7; }
+  .box.mid { width: 7px; height: 7px; }
+  .inner { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 30px 24px 0; text-align: center; }
+  .thanks { font-size: 20px; color: var(--gold-lt); line-height: 1.7; }
+  .kick { font-size: 9px; letter-spacing: 0.3em; color: var(--gold); }
+  .orn2 { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .line2 { width: 52px; }
+  .names { font-size: 13px; color: var(--cream); line-height: 2; }
+  .dots { font-size: 9px; letter-spacing: 0.3em; color: var(--gold); }
+</style>

@@ -1,0 +1,30 @@
+---
+import { wedding } from '@/content/wedding';
+import Photo from './Photo.astro';
+const { photos } = wedding;
+---
+<section id="gallery" class="gallery">
+  <div data-reveal class="inner">
+    <div class="section-title">
+      <h2>កម្រងរូបភាព</h2>
+      <div class="en">Gallery</div>
+    </div>
+    <div class="grid">
+      {photos.gallery.map((p) => (
+        <div class:list={['cell', p.shape]} data-reveal="stagger"><Photo src={p.src} label={p.label} /></div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .gallery { background: var(--cream); padding: 48px var(--inset-wide) 56px; }
+  .inner { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  .section-title h2 { color: var(--wine-600); }
+  .section-title .en { color: var(--rose); }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .cell { position: relative; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 12px; background: var(--photo-bg); }
+  .wide { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+  .landscape { grid-column: 1 / -1; aspect-ratio: 3 / 2; }
+  .tall { grid-column: 1 / -1; aspect-ratio: 3 / 4; }
+</style>

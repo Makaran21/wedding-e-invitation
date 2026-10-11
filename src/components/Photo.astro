@@ -1,0 +1,23 @@
+---
+// Photo that shows a soft labelled placeholder until the file exists.
+interface Props { src: string; label: string; alt?: string; eager?: boolean }
+const { src, label, alt = '', eager = false } = Astro.props;
+---
+<div class="photo" data-label={label}>
+  <img src={src} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async"
+       onerror="this.parentElement.classList.add('is-missing');this.remove()" />
+</div>
+
+<style>
+  .photo { position: absolute; inset: 0; }
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .photo.is-missing {
+    display: flex; align-items: center; justify-content: center;
+    background: repeating-linear-gradient(135deg, rgba(142,27,46,0.05) 0 8px, transparent 8px 16px);
+  }
+  .photo.is-missing::after {
+    content: attr(data-label);
+    font-family: var(--en-font); font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--tan); text-align: center; padding: 0 6px;
+  }
+</style>

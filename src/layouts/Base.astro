@@ -1,0 +1,59 @@
+---
+import '@/styles/global.css';
+import SvgSprite from '@/components/SvgSprite.astro';
+import Rails from '@/components/Rails.astro';
+import { wedding } from '@/content/wedding';
+import { googleFontsHref } from '@/lib/fonts';
+
+const { couple, date, settings } = wedding;
+const rail = Math.max(6, Math.min(48, settings.railWidth));
+const title = `${couple.groom.en} & ${couple.bride.en} · ${date.dots}`;
+const description = `សិរីមង្គលអាពាហ៍ពិពាហ៍ · Wedding invitation · ${date.fullEn}`;
+const rootStyle = [
+  `--rail:${rail}px`,
+  `--kh-font:'${settings.khmerFont}', sans-serif`,
+  `--en-font:'${settings.latinFont}', serif`,
+].join(';');
+---
+<!doctype html>
+<html lang="km" style={rootStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#8E1B2E" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/assets/monogram-khmer-gold.png" />
+    <!-- Opened from the Home Screen, iOS shows the invitation full screen with no Safari bars. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content={couple.short} />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href={googleFontsHref(settings.khmerFont, settings.latinFont)} />
+    <script is:inline>
+      // Every visit starts at the top, behind the cover — don't restore the old scroll position on reload.
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+    </script>
+  </head>
+  <body class={settings.lockUntilOpened ? 'is-locked' : undefined}>
+    <div class="page">
+      <SvgSprite />
+      <slot />
+      <Rails />
+    </div>
+    <script>
+      import { setupReveal } from '@/scripts/reveal';
+      import { onOpened } from '@/lib/events';
+      import { wedding } from '@/content/wedding';
+      // With the cover lock on, sections animate in only after the guest opens the invitation.
+      if (wedding.settings.lockUntilOpened) onOpened(setupReveal);
+      else setTimeout(setupReveal, 500);
+    </script>
+  </body>
+</html>

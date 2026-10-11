@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Moulpali&family=Moul&family=Preahvihear&family=Battambang:wght@400;700&family=Suwannaphum:wght@400;700&family=Kantumruy+Pro:wght@300;400;500;600&family=Koulen&family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:wght@400;500&family=Marcellus&family=Playfair+Display:wght@400;500;600&family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="_ds/folio-design-system-46d36e5d-8c31-49ae-b403-f227b995da73/tokens/base.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+  :root { --kh-font:'Moulpali',sans-serif; --en-font:'Cinzel',serif; }
+  html, body { margin:0; padding:0; background:#58101F; }
+  body { -webkit-font-smoothing:antialiased; }
+  a { color:#D9A441; text-decoration:none; }
+  a:hover { color:#F4DA9B; }
+  *:focus-visible { outline:2px solid #D9A441; outline-offset:3px; border-radius:2px; }
+  input::placeholder, textarea::placeholder { color:#A98B69; }
+  @keyframes iconBloom { 0%{opacity:0;transform:translateY(6px) scale(.86)} 60%{opacity:1;transform:translateY(0) scale(1.06)} 100%{opacity:1;transform:none} }
+  @keyframes iconBreathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+  @keyframes iconSway { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+  @keyframes petalFall { 0%{top:-0.4%;opacity:0} 5%{opacity:1} 97%{opacity:1} 100%{top:var(--end,99%);opacity:1} }
+  @keyframes petalVanish { 0%{top:-0.4%;opacity:0} 5%{opacity:1} 100%{top:var(--end,99%);opacity:1} }
+  @keyframes petalFadeOut { 0%{opacity:1} 100%{opacity:0} }
+  @keyframes petalLand { 0%{transform:rotate(0deg) translateY(0)} 18%{transform:rotate(-16deg) translateY(1px)} 40%{transform:rotate(10deg) translateY(0)} 62%{transform:rotate(-5deg) translateY(1px)} 82%{transform:rotate(2deg) translateY(0)} 100%{transform:rotate(0deg) translateY(1px)} }
+  @keyframes petalRipple { 0%{transform:translate(-50%,-50%) scale(.2);opacity:0} 12%{opacity:.75} 100%{transform:translate(-50%,-50%) scale(1);opacity:0} }
+  @keyframes petalGlint { 0%{transform:translate(-50%,-50%) scale(0) rotate(0deg);opacity:0} 25%{transform:translate(-50%,-50%) scale(1) rotate(45deg);opacity:1} 100%{transform:translate(-50%,-50%) scale(.3) rotate(90deg);opacity:0} }
+  @keyframes petalDrift { 0%{transform:translateX(-18px)} 100%{transform:translateX(18px)} }
+  @keyframes petalGust { 0%{transform:rotate(0deg)} 22%{transform:rotate(42deg)} 38%{transform:rotate(168deg)} 56%{transform:rotate(198deg)} 79%{transform:rotate(322deg)} 100%{transform:rotate(360deg)} }
+  @keyframes petalFlutter { 0%,100%{transform:scaleX(1) rotate(0deg)} 28%{transform:scaleX(0.62) rotate(5deg)} 55%{transform:scaleX(0.92) rotate(-4deg)} 78%{transform:scaleX(0.74) rotate(2deg)} }
+  @keyframes sparkTwinkle { 0%,100%{opacity:0;transform:scale(.55)} 12%{opacity:1;transform:scale(1)} 30%{opacity:.35;transform:scale(.8)} 48%{opacity:.95;transform:scale(1.05)} 72%{opacity:.2;transform:scale(.7)} }
+  @keyframes sparkFloat { 0%{margin-top:0;margin-left:0} 100%{margin-top:-26px;margin-left:9px} }
+  @keyframes shineOnce { 0%{transform:translateX(-120%)} 100%{transform:translateX(240%)} }
+  @keyframes dust { 0%{transform:translate3d(0,0,0);opacity:.15} 50%{opacity:.75} 100%{transform:translate3d(6px,-70px,0);opacity:0} }
+  @media (prefers-reduced-motion: reduce) { *{animation:none !important; transition:none !important} }
+</style>
+</helmet>
+
+<div style="width:100%;background:#F6EDDF;font-family:var(--en-font);overflow-x:clip;overflow-y:visible;position:relative;box-sizing:border-box">
+
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <g id="petal" fill="none" stroke="#D9A441" stroke-width="1" stroke-linecap="round">
+        <path d="M100 40 C94 31 94 22 100 14 C106 22 106 31 100 40"></path>
+        <path d="M100 33 L100 22"></path>
+      </g>
+      <symbol id="icoLock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8.5 11 V8 C8.5 6 10 4.6 12 4.6 C14 4.6 15.5 6 15.5 8 V11"></path></g></symbol>
+      <symbol id="icoList" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6 H20 M4 12 H20 M4 18 H20"></path><circle cx="4" cy="6" r="0.1"></circle></g></symbol>
+      <symbol id="icoPath" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7 C9 2 15 12 20 7"></path><path d="M4 17 C9 12 15 22 20 17"></path></g></symbol>
+      <symbol id="kbachCorner" viewBox="0 0 40 40"><g fill="none" stroke="#D9A441" stroke-width="1" stroke-linecap="round"><path d="M39 3 H10 C6 3 3 6 3 10 V39"></path><path d="M34 8 C22 9 14 14 10 24 C8.6 27.6 8 31 8 35"></path><path d="M22 15 C17 13 12 16 12 21 C12 25 17 26 18 22.5 C18.6 20.4 16.4 19.6 15.6 21"></path><path d="M28 11 C28.5 8 30.5 6 33 5.5"></path></g></symbol>
+      <symbol id="icoTray" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 30 H34 M9 30 C9 22 14 18 20 18 C26 18 31 22 31 30"></path><path d="M20 18 V12 M16 9 C18 6 22 6 24 9 C22 11 18 11 16 9Z"></path><path d="M11 34 H29"></path></g></symbol>
+      <symbol id="icoMonk" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="12" r="4.5"></circle><path d="M9 32 C9 23 14 19 20 19 C26 19 31 23 31 32Z"></path><path d="M13 32 H27"></path></g></symbol>
+      <symbol id="icoGuests" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="15" r="3.6"></circle><circle cx="28" cy="15" r="3.6"></circle><circle cx="20" cy="13" r="4.2"></circle><path d="M5 31 C5 25 8 22 12 22 C16 22 19 25 19 31"></path><path d="M21 31 C21 25 24 22 28 22 C32 22 35 25 35 31"></path></g></symbol>
+      <symbol id="icoDine" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="20" r="11"></circle><path d="M20 25 C16 22 15 18 17.5 16.5 C19 15.6 20 17 20 17 C20 17 21 15.6 22.5 16.5 C25 18 24 22 20 25Z"></path><path d="M4 12 V28 M34 12 V22 M31 12 V18 M37 12 V18"></path></g></symbol>
+      <symbol id="icoScissors" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="30" r="4"></circle><circle cx="28" cy="30" r="4"></circle><path d="M14.5 26.5 L28 8 M25.5 26.5 L12 8"></path></g></symbol>
+      <symbol id="icoRings" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="16" cy="23" r="8"></circle><circle cx="26" cy="23" r="8"></circle><path d="M21 9 L18 13 H24 Z"></path></g></symbol>
+      <symbol id="icoBlessing" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M20 32 C13 26 8 22 8 17 C8 12 13 10 16 13 L20 17 L24 13 C27 10 32 12 32 17 C32 22 27 26 20 32Z"></path><path d="M20 8 V4"></path></g></symbol>
+      <symbol id="petalShape" viewBox="0 0 30 32">
+        <path d="M15 31 C8.6 28.6 3.6 23 3 16.2 C2.4 9.4 6.4 3.4 11.6 2.4 C14 2 15.6 3.6 17.6 3.2 C20.6 2.6 24.4 5.2 25.6 9.6 C27.4 16.4 23 27 15 31 Z" fill="#D9A441"></path>
+        <path d="M13.4 29 C12.2 21.6 13 12.6 16.4 6.4" stroke="#8B6621" stroke-width="0.8" stroke-opacity="0.28" fill="none"></path>
+      </symbol>
+      <symbol id="petalShapeLt" viewBox="0 0 30 32">
+        <path d="M15 31 C8.6 28.6 3.6 23 3 16.2 C2.4 9.4 6.4 3.4 11.6 2.4 C14 2 15.6 3.6 17.6 3.2 C20.6 2.6 24.4 5.2 25.6 9.6 C27.4 16.4 23 27 15 31 Z" fill="#EBC97E"></path>
+        <path d="M13.4 29 C12.2 21.6 13 12.6 16.4 6.4" stroke="#8B6621" stroke-width="0.8" stroke-opacity="0.22" fill="none"></path>
+      </symbol>
+      <symbol id="icoMusic" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M16 27 V11 L30 8 V24"></path><circle cx="12" cy="28" r="4"></circle><circle cx="26" cy="25" r="4"></circle></g></symbol>
+    </defs>
+  </svg>
+
+  <div aria-hidden="true" style="position:absolute;top:0;bottom:0;left:{{ railW }};right:{{ railW }};z-index:52;pointer-events:none;overflow:hidden">
+    <sc-for list="{{ petals }}" as="p" hint-placeholder-count="0">
+      <span style="position:absolute;top:-4%;left:{{ p.left }};--end:{{ p.end }};transform-origin:50% 100%;animation:{{ p.fall }} {{ p.dur }} linear {{ p.delay }} 1 both, petalLand 1.8s ease-out {{ p.land }} 1 both;opacity:0">
+        <span style="position:absolute;left:50%;top:60%;width:34px;height:12px;border-radius:50%;border:1px solid rgba(217,164,65,0.7);pointer-events:none;animation:petalRipple 1.6s ease-out {{ p.land }} 1 both;opacity:0"></span>
+        <span style="position:absolute;left:50%;top:60%;width:52px;height:18px;border-radius:50%;border:1px solid rgba(217,164,65,0.45);pointer-events:none;animation:petalRipple 2.2s ease-out {{ p.land2 }} 1 both;opacity:0"></span>
+        <span style="position:absolute;left:50%;top:10%;width:9px;height:9px;pointer-events:none;background:radial-gradient(circle, #FFF4DA 0%, rgba(244,218,155,0.9) 30%, rgba(217,164,65,0) 70%);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:petalGlint 0.9s ease-out {{ p.land }} 1 both;opacity:0"></span>
+        <span style="display:block;animation:petalDrift {{ p.sway }} ease-in-out {{ p.driftN }} alternate both, {{ p.fade }}"><span style="display:block;animation:petalGust {{ p.gust }} linear {{ p.gustN }} both"><svg viewBox="0 0 30 32" width="{{ p.size }}" height="{{ p.tall }}" style="display:block;opacity:{{ p.op }};filter:drop-shadow(1.5px 3px 2px rgba(44,5,16,0.35));animation:petalFlutter {{ p.flutter }} ease-in-out {{ p.flutterN }} both"><use href="{{ p.sym }}" width="30" height="32"></use></svg></span></span>
+      </span>
+    </sc-for>
+    <sc-for list="{{ sparks }}" as="k" hint-placeholder-count="0">
+      <span style="position:absolute;left:{{ k.left }};top:{{ k.top }};width:{{ k.size }};height:{{ k.size }};border-radius:50%;background:radial-gradient(circle, #FFF4DA 0%, #F4DA9B 35%, rgba(217,164,65,0) 72%);box-shadow:0 0 {{ k.halo }} rgba(217,164,65,0.55);animation:sparkTwinkle {{ k.dur }} ease-in-out {{ k.delay }} infinite, sparkFloat {{ k.drift }} ease-in-out {{ k.delay }} infinite alternate;opacity:0"></span>
+    </sc-for>
+  </div>
+
+  <!-- ============ COVER ============ -->
+  <sc-if value="{{ coverMounted }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Cover" style="position:fixed;inset:0;z-index:60;background:#8E1B2E;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:46px 44px;box-sizing:border-box;transition:opacity 700ms ease-out;opacity:{{ coverOpacity }};pointer-events:{{ coverPointer }}">
+    <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 30%, #AA2740 0%, #8E1B2E 45%, #6E1526 100%)"></div>
+    <div aria-hidden="true" style="position:absolute;left:4px;top:0;bottom:0;width:{{ coverRailW }};opacity:.95;background-image:url('kbach-flame.png'),url('kbach-rail-tile.png');background-size:{{ coverRailW }} auto,{{ coverRailW }} auto;background-repeat:no-repeat,repeat-y;background-position:left center,left top"></div>
+    <div aria-hidden="true" style="position:absolute;right:4px;top:0;bottom:0;width:{{ coverRailW }};transform:scaleX(-1);opacity:.95;background-image:url('kbach-flame.png'),url('kbach-rail-tile.png');background-size:{{ coverRailW }} auto,{{ coverRailW }} auto;background-repeat:no-repeat,repeat-y;background-position:left center,left top"></div>
+
+    <div aria-hidden="true" style="position:absolute;left:30px;right:30px;top:22px;bottom:22px;border:1px solid rgba(217,164,65,0.55);pointer-events:none"></div>
+    <div aria-hidden="true" style="position:absolute;left:34px;right:34px;top:26px;bottom:26px;border:1px solid rgba(217,164,65,0.28);pointer-events:none"></div>
+    <svg aria-hidden="true" width="30" height="30" style="position:absolute;left:30px;top:22px;color:#D9A441;opacity:.8"><use href="#kbachCorner" width="30" height="30"></use></svg>
+    <svg aria-hidden="true" width="30" height="30" style="position:absolute;right:30px;top:22px;transform:scaleX(-1);color:#D9A441;opacity:.8"><use href="#kbachCorner" width="30" height="30"></use></svg>
+    <svg aria-hidden="true" width="30" height="30" style="position:absolute;left:30px;bottom:22px;transform:scaleY(-1);color:#D9A441;opacity:.8"><use href="#kbachCorner" width="30" height="30"></use></svg>
+    <svg aria-hidden="true" width="30" height="30" style="position:absolute;right:30px;bottom:22px;transform:scale(-1,-1);color:#D9A441;opacity:.8"><use href="#kbachCorner" width="30" height="30"></use></svg>
+
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;width:100%;max-width:290px;height:100%;padding:22px 0 14px;box-sizing:border-box">
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div aria-hidden="true" style="width:26px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.75))"></div>
+          <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.34em;text-transform:uppercase;color:#D9A441">Wedding invitation</div>
+          <div aria-hidden="true" style="width:26px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.75))"></div>
+        </div>
+        <h1 style="margin:0;font-family:var(--kh-font);font-size:21px;line-height:1.7;color:#F6EDDF;font-weight:400;text-wrap:pretty">សិរីមង្គលអាពាហ៍ពិពាហ៍</h1>
+      </div>
+
+      <div style="position:relative;width:156px;height:156px;display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 156 156" width="156" height="156" aria-hidden="true" style="position:absolute;inset:0">
+          <circle cx="78" cy="78" r="76" fill="none" stroke="#D9A441" stroke-width="0.6" opacity="0.45"></circle>
+          <circle cx="78" cy="78" r="70" fill="none" stroke="#D9A441" stroke-width="1"></circle>
+          <circle cx="78" cy="78" r="66" fill="none" stroke="#D9A441" stroke-width="0.5" opacity="0.4"></circle>
+          <g stroke="#D9A441" stroke-width="0.9" fill="none" opacity="0.9">
+            <path d="M78 4 l4.5 7 -4.5 7 -4.5 -7z"></path>
+            <path d="M78 152 l4.5 -7 -4.5 -7 -4.5 7z"></path>
+            <path d="M4 78 l7 4.5 7 -4.5 -7 -4.5z"></path>
+            <path d="M152 78 l-7 4.5 -7 -4.5 7 -4.5z"></path>
+          </g>
+        </svg>
+        <sc-if value="{{ monoImage }}" hint-placeholder-val="{{ true }}">
+        <img src="{{ monoSrc }}" alt="Monogram" style="position:relative;width:76px;height:108px;object-fit:contain;pointer-events:none">
+        </sc-if>
+        <sc-if value="{{ monoText }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;font-family:var(--kh-font);font-size:38px;color:#F4DA9B;letter-spacing:0.06em;line-height:1">ម ន</div>
+        </sc-if>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="font-family:var(--kh-font);font-size:19px;color:#F6EDDF;line-height:1.6">វិជ្ជានន្ទ មករន្ទ</div>
+          <div style="font-family:var(--en-font);font-size:8.5px;letter-spacing:0.3em;text-transform:uppercase;color:#D9A441">Vicheanon Makaran</div>
+        </div>
+
+        <div aria-hidden="false" style="display:flex;align-items:center;gap:12px;width:100%">
+          <div aria-hidden="true" style="flex:1;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.6))"></div>
+          <div style="width:24px;height:24px;transform:rotate(45deg);border:1px solid rgba(217,164,65,0.7);display:flex;align-items:center;justify-content:center;flex:none">
+            <span style="transform:rotate(-45deg);font-family:var(--en-font);font-size:12px;color:#F4DA9B;line-height:1">&amp;</span>
+          </div>
+          <div aria-hidden="true" style="flex:1;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.6))"></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="font-family:var(--kh-font);font-size:19px;color:#F6EDDF;line-height:1.6">អ៊ុង វួចនា</div>
+          <div style="font-family:var(--en-font);font-size:8.5px;letter-spacing:0.3em;text-transform:uppercase;color:#D9A441">Ung Vouchnea</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="font-family:var(--kh-font);font-size:14px;color:#F4DA9B;line-height:1.8">ថ្ងៃអាទិត្យ ១២រោច ខែកតឹ្ក</div>
+          <div style="font-family:var(--en-font);font-size:12px;letter-spacing:0.3em;color:#D9A441">06 . 12 . 2026</div>
+        </div>
+
+        <button type="button" onClick="{{ openInvitation }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:13px 28px;border-radius:2px;border:1px solid #D9A441;background:rgba(44,5,16,0.3);color:#F4DA9B;cursor:pointer;font-family:var(--kh-font);transition:background 200ms ease-out,color 200ms ease-out,border-color 200ms ease-out" style-hover="background:#D9A441;color:#6E1526;border-color:#F4DA9B">
+          <span style="font-family:var(--kh-font);font-size:14px;line-height:1.4">បើកសំបុត្រ</span>
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.3em;text-transform:uppercase">Open invitation</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+
+
+  <!-- ============ SAVE THE DATE ============ -->
+  <section id="date" data-screen-label="Save the date" style="position:relative;background:#58101F;padding:72px 24px 64px;overflow:hidden;padding-left:{{ contentInset }};padding-right:{{ contentInset }};box-sizing:border-box">
+    <div style="position:absolute;inset:0;background:radial-gradient(90% 60% at 50% 45%, #6E1526 0%, #58101F 70%)"></div>
+    <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden">
+      <sc-for list="{{ dust }}" as="d" hint-placeholder-count="0">
+        <span style="position:absolute;width:3px;height:3px;border-radius:50%;background:#D9A441;left:{{ d.left }};bottom:{{ d.bottom }};animation:dust {{ d.dur }} linear {{ d.delay }} infinite;opacity:0"></span>
+      </sc-for>
+    </div>
+
+    <div data-reveal="1" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div aria-hidden="true" style="width:38px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+        <div style="font-family:var(--en-font);font-size:10px;letter-spacing:0.32em;text-transform:uppercase;color:#D9A441">Save the date</div>
+        <div aria-hidden="true" style="width:38px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+      </div>
+
+      <sc-if value="{{ dateMonoImage }}" hint-placeholder-val="{{ true }}">
+      <img src="{{ dateMonoSrc }}" alt="Monogram" style="display:block;width:172px;height:242px;object-fit:contain;margin-bottom:-6px">
+      </sc-if>
+      <sc-if value="{{ dateMonoType }}" hint-placeholder-val="{{ false }}">
+      <div style="font-family:var(--en-font);font-size:64px;font-weight:500;color:#D9A441;line-height:1;letter-spacing:0.02em">M<span style="display:inline-block;margin:0 -14px;font-size:44px;transform:translateY(-6px);opacity:.9">&amp;</span>N</div>
+      </sc-if>
+
+      <div style="font-family:var(--kh-font);font-size:17px;color:#F4DA9B;letter-spacing:0.02em;line-height:1.9;text-wrap:pretty;max-width:300px">ថ្ងៃអាទិត្យ ១២រោច ខែកតឹ្ក</div>
+
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;width:100%;max-width:330px">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-right:16px;border-right:1px solid rgba(217,164,65,0.35)">
+          <span style="font-family:var(--kh-font);font-size:15px;color:#F4DA9B;line-height:1.5">ធ្នូ</span>
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.22em;text-transform:uppercase;color:#D9A441">December</span>
+        </div>
+        <div style="font-family:var(--en-font);font-size:62px;font-weight:500;color:#D9A441;line-height:0.9;letter-spacing:0.01em">06</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding-left:16px;border-left:1px solid rgba(217,164,65,0.35)">
+          <span style="font-family:var(--kh-font);font-size:15px;color:#F4DA9B;line-height:1.5">២០២៦</span>
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.22em;text-transform:uppercase;color:#D9A441">Sunday</span>
+        </div>
+      </div>
+
+      <div ref="{{ shineRef }}" style="position:relative;overflow:hidden;width:100%;max-width:320px;padding:30px 34px;box-sizing:border-box;border-top:1px solid rgba(217,164,65,0.6);border-bottom:1px solid rgba(217,164,65,0.6);background:linear-gradient(180deg, rgba(217,164,65,0.08), rgba(217,164,65,0.01))">
+        <div aria-hidden="true" style="position:absolute;top:0;bottom:0;left:0;width:70%;pointer-events:none;z-index:3;background:linear-gradient(100deg, rgba(217,164,65,0) 0%, rgba(217,164,65,0.14) 38%, rgba(244,218,155,0.30) 50%, rgba(217,164,65,0.14) 62%, rgba(217,164,65,0) 100%);mix-blend-mode:screen;transform:translateX(-120%);animation:{{ guestShine }}"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0) 0%, rgba(217,164,65,0.3) 18%, rgba(217,164,65,0.3) 82%, rgba(217,164,65,0) 100%)"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:4px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0) 0%, rgba(217,164,65,0.3) 18%, rgba(217,164,65,0.3) 82%, rgba(217,164,65,0) 100%)"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;top:-1px;width:1px;height:16px;background:rgba(217,164,65,0.55)"></div>
+        <div aria-hidden="true" style="position:absolute;right:0;top:-1px;width:1px;height:16px;background:rgba(217,164,65,0.55)"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;bottom:-1px;width:1px;height:16px;background:rgba(217,164,65,0.55)"></div>
+        <div aria-hidden="true" style="position:absolute;right:0;bottom:-1px;width:1px;height:16px;background:rgba(217,164,65,0.55)"></div>
+        <div aria-hidden="true" style="position:absolute;top:-4px;left:50%;transform:translateX(-50%) rotate(45deg);width:7px;height:7px;background:#58101F;border:1px solid #D9A441"></div>
+        <div aria-hidden="true" style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(45deg);width:7px;height:7px;background:#58101F;border:1px solid #D9A441"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:13px">
+          <div style="font-family:var(--kh-font);font-size:11px;letter-spacing:0.08em;color:#D9A441;line-height:1.8">សូមគោរពជូន</div>
+          <div aria-hidden="true" style="width:22px;height:1px;background:rgba(217,164,65,0.5)"></div>
+          <div style="font-family:var(--kh-font);font-size:15px;line-height:1.8;text-wrap:pretty;color:#F4DA9B">{{ guestKh }}</div>
+        </div>
+      </div>
+
+    </div>
+  
+    <div style="position:relative;z-index:6;margin:44px auto 0;padding:26px 0 24px;display:flex;flex-direction:column;align-items:center;gap:18px">
+      <div data-sfx="turn" aria-hidden="true" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:280px;height:280px;transform-origin:50% 50%;background:url('monogram-kbach-gold.png') center/contain no-repeat;opacity:.16;pointer-events:none"></div>
+      <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;bottom:0;background:url('kbach-rail-tile.png') center top/64px repeat;opacity:.07;pointer-events:none"></div>
+      <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.55), rgba(217,164,65,0))"></div>
+      <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.55), rgba(217,164,65,0))"></div>
+      <div style="position:relative;font-family:var(--en-font);font-size:9.5px;letter-spacing:0.3em;text-transform:uppercase;color:#D9A441">The beginning of always</div>
+      <div data-parallax="0.02" style="position:relative;flex:0 0 auto;width:132px;transform:rotate(-4deg);will-change:transform;cursor:pointer">
+        <div style="background:#F6EDDF;padding:8px 8px 0;box-shadow:0 14px 32px rgba(20,3,8,0.6), 0 2px 0 rgba(255,255,255,0.35) inset;display:flex;flex-direction:column;gap:6px">
+          <div style="position:relative;aspect-ratio:4/5;overflow:hidden;background:#DED3C0"><image-slot id="kw-reel1" shape="rect" fit="cover" placeholder="Strip 1"></image-slot></div>
+          <div style="position:relative;aspect-ratio:4/5;overflow:hidden;background:#DED3C0"><image-slot id="kw-reel2" shape="rect" fit="cover" placeholder="Strip 2"></image-slot></div>
+          <div style="position:relative;aspect-ratio:4/5;overflow:hidden;background:#DED3C0"><image-slot id="kw-reel3" shape="rect" fit="cover" placeholder="Strip 3"></image-slot></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 10px">
+            <div style="font-family:var(--en-font);font-size:6px;letter-spacing:0.2em;text-transform:uppercase;color:#8A1226">Makaran &amp; Vouchnea</div>
+            <div style="font-family:var(--en-font);font-size:5.5px;letter-spacing:0.18em;color:#B07A5A">06 . 12 . 2026</div>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;font-family:var(--kh-font);font-size:11px;color:#F4DA9B;opacity:.8;line-height:2">រំលេចដំណើររឿងរបស់យើង</div>
+    </div>
+  </section>
+
+  <!-- ============ THE LETTER ============ -->
+  <section id="letter" data-screen-label="The letter" style="position:relative;background:#6E1526;padding-left:{{ contentInset }};padding-right:{{ contentInset }};box-sizing:border-box">
+    <div style="position:relative;overflow:hidden;background:radial-gradient(120% 90% at 50% 18%, #FDF8EE 0%, #F6EDDF 46%, #EADCC2 100%)">
+      <div aria-hidden="true" style="position:absolute;inset:0;opacity:.5;background:repeating-linear-gradient(90deg, rgba(142,27,46,0.05) 0 1px, transparent 1px 26px), repeating-linear-gradient(0deg, rgba(142,27,46,0.04) 0 1px, transparent 1px 26px)"></div>
+
+      <div data-reveal="1" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center;max-width:520px;margin:0 auto;padding:60px 34px 56px">
+        <h2 style="margin:0;font-family:var(--kh-font);font-size:21px;line-height:1.7;color:#8A1226;font-weight:400;text-shadow:0 0 1px rgba(217,164,65,0.35)">សិរីមង្គលអាពាហ៍ពិពាហ៍</h2>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;width:100%;font-family:var(--kh-font);font-size:12.5px;color:#8A1226;line-height:1.9">
+          <div>លោក ..... </div>
+          <div>លោក ..... </div>
+          <div>លោកជំទាវ ..... </div>
+          <div>លោកស្រី ..... </div>
+        </div>
+
+        <div style="font-family:var(--kh-font);font-size:13px;color:#AA2740;line-height:1.8">មានកិត្តិយសសូមគោរពអញ្ជើញ</div>
+
+        <p style="margin:0;font-family:var(--kh-font);font-size:14px;line-height:2.1;color:#8A1226;font-weight:400;text-wrap:pretty">សម្តេច ឯកឧត្តម លោកជំទាវ លោកអ្នកឧកញ៉ា អ្នកឧកញ៉ា ឧកញ៉ា លោក លោកស្រី អ្នកនាង កញ្ញា អញ្ជើញជាអធិបតី និងជាភ្ញៀវកិត្តិយស ដើម្បីប្រសិទ្ធពរជ័យសិរីសួស្តី ជូនមង្គល ក្នុងពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍ កូនប្រុស–កូនស្រី របស់យើងខ្ញុំ</p>
+        <p style="margin:0;font-family:var(--en-font);font-size:14.5px;line-height:1.85;letter-spacing:0.015em;color:#A8543F;font-weight:400">We respectfully request the honour of your presence at the wedding ceremony of our son and daughter.</p>
+
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;width:100%;padding-top:6px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:var(--kh-font);font-size:11px;color:#A8543F;letter-spacing:0.04em">កូនប្រុសនាម</span>
+            <span style="font-family:var(--kh-font);font-size:15px;color:#8A1226;line-height:1.6">វិជ្ជានន្ទ មករន្ទ</span>
+            <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.3em;text-transform:uppercase;color:#B07A5A">Vicheanon Makaran</span>
+          </div>
+          <div style="position:relative;width:54px;height:54px;display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 54 54" width="54" height="54" aria-hidden="true" style="position:absolute;inset:0">
+              <circle cx="27" cy="27" r="25" fill="#8E1B2E" stroke="#D9A441" stroke-width="1.2"></circle>
+              <circle cx="27" cy="27" r="20" fill="none" stroke="#D9A441" stroke-width="0.6" opacity=".8"></circle>
+              <use href="#petal" transform="translate(-73,-13) scale(1)"></use>
+            </svg>
+            <span style="position:relative;font-family:var(--kh-font);font-size:15px;color:#F4DA9B;line-height:1">ម ន</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:var(--kh-font);font-size:11px;color:#A8543F;letter-spacing:0.04em">កូនស្រីនាម</span>
+            <span style="font-family:var(--kh-font);font-size:15px;color:#8A1226;line-height:1.6">អ៊ុង វួចនា</span>
+            <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.3em;text-transform:uppercase;color:#B07A5A">Ung Vouchnea</span>
+          </div>
+        </div>
+
+        <div style="width:78%;height:1px;background:linear-gradient(to right, transparent, rgba(217,164,65,0.85), transparent)"></div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-family:var(--kh-font);font-size:13.5px;line-height:2.1;color:#8A1226;font-weight:400">ដែលនឹងប្រព្រឹត្តទៅនៅថ្ងៃអាទិត្យ ទី៦ ខែធ្នូ ឆ្នាំ២០២៦ ត្រូវនឹងថ្ងៃ ..... ខែធ្នូ ឆ្នាំម្មី អដ្ឋសក ព.ស ២៥៧០ វេលាម៉ោង ..... នៅ ..... </p>
+          <div style="font-family:var(--en-font);font-size:12px;letter-spacing:0.3em;color:#AA2740">06 . 12 . 2026</div>
+          <p style="margin:0;font-family:var(--en-font);font-size:14.5px;line-height:1.85;letter-spacing:0.015em;color:#A8543F;font-weight:400">Sunday 6 December 2026 · ..... · reception from .....</p>
+          <div style="font-family:var(--kh-font);font-size:12px;color:#AA2740;line-height:1.8;padding-top:4px">សូមអរគុណ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COUPLE PHOTO ============ -->
+  <section data-screen-label="Couple photo" style="position:relative;background:#6E1526;padding-left:{{ contentInset }};padding-right:{{ contentInset }};box-sizing:border-box">
+    <div data-reveal="1" style="position:relative;width:100%;aspect-ratio:4/5;overflow:hidden">
+      <div data-sfx="zoom" style="position:absolute;inset:-8% 0;transform-origin:50% 50%;will-change:transform"><image-slot id="kw-couple" shape="rect" placeholder="Drop the 4:5 couple portrait"></image-slot></div>
+      <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top, rgba(44,5,16,0.92) 0%, rgba(74,10,23,0.45) 32%, rgba(74,10,23,0) 62%)"></div>
+      <div style="position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none">
+        <div style="font-family:var(--en-font);font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#F4DA9B;text-align:center;line-height:2.1">Vicheanon Makaran<br>&amp;<br>Ung Vouchnea</div>
+        <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;color:#D9A441">06 . 12 . 2026</div>
+      </div>
+    </div>
+  </section>
+
+  <div aria-hidden="true" style="background:#F6EDDF;padding:24px 0;display:flex;align-items:center;justify-content:center;gap:14px">
+      <div style="width:60px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+      <div style="width:9px;height:9px;flex:none;transform:rotate(45deg);border:1px solid #D9A441"></div>
+      <div style="width:60px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+    </div>
+
+  <!-- ============ GALLERY ============ -->
+  <section id="gallery" data-screen-label="Gallery" style="background:#F6EDDF;padding:48px 16px 56px;padding-left:{{ contentInsetWide }};padding-right:{{ contentInsetWide }};box-sizing:border-box">
+    <div data-reveal="1" style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;will-change:transform">
+        <h2 style="margin:0;font-family:var(--kh-font);font-size:17px;color:#8E1B2E;font-weight:400;line-height:1.7">វិចិត្រសាល</h2>
+        <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#AA2740">Gallery</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
+        <div style="position:relative;grid-column:1 / -1;aspect-ratio:16/9;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-gw1" shape="rect" fit="cover" placeholder="Wide photo 1"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g1" shape="rect" fit="cover" placeholder="Photo 1"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g2" shape="rect" fit="cover" placeholder="Photo 2"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g3" shape="rect" fit="cover" placeholder="Photo 3"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g4" shape="rect" fit="cover" placeholder="Photo 4"></image-slot></div>
+        <div style="position:relative;grid-column:1 / -1;aspect-ratio:3/2;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-gw2" shape="rect" fit="cover" placeholder="Wide photo 2"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g5" shape="rect" fit="cover" placeholder="Photo 5"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g6" shape="rect" fit="cover" placeholder="Photo 6"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g7" shape="rect" fit="cover" placeholder="Photo 7"></image-slot></div>
+        <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g8" shape="rect" fit="cover" placeholder="Photo 8"></image-slot></div>
+        <div style="position:relative;grid-column:1 / -1;aspect-ratio:16/9;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-gw3" shape="rect" fit="cover" placeholder="Wide photo 3"></image-slot></div>
+        <div style="position:relative;grid-column:1 / -1;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#EADFCC" data-reveal="stagger"><image-slot id="kw-g9" shape="rect" fit="cover" placeholder="Photo 9 · tall"></image-slot></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRAM ============ -->
+  <section id="program" data-screen-label="Program" style="background:#8E1B2E;padding:0 0 46px;padding-left:{{ contentInset }};padding-right:{{ contentInset }};box-sizing:border-box">
+    <div aria-hidden="true" style="padding:30px 0 0;display:flex;align-items:center;justify-content:center;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:4px;flex:none">
+        <div style="width:60px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+        <div style="width:36px;height:1px;margin-left:auto;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.4))"></div>
+      </div>
+      <div style="width:7px;height:7px;flex:none;transform:rotate(45deg);background:#D9A441"></div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex:none">
+        <div style="width:60px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+        <div style="width:36px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.4))"></div>
+      </div>
+    </div>
+    <div data-reveal="1" style="max-width:520px;margin:0 auto;padding:26px 24px 0;display:flex;flex-direction:column;gap:26px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;will-change:transform">
+        <h2 style="margin:0;font-family:var(--kh-font);font-size:17px;color:#F4DA9B;font-weight:400;line-height:1.7">កម្មវិធីពិធីមង្គលការ</h2>
+        <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#D9A441">Order of ceremony</div>
+      </div>
+      <div style="display:flex;justify-content:center">
+        <button type="button" onClick="{{ toggleView }}" aria-label="{{ toggleAria }}" style="display:flex;align-items:center;gap:7px;padding:6px 13px;border:1px solid rgba(217,164,65,0.45);border-radius:999px;background:transparent;cursor:pointer;color:#D9A441;transition:border-color 200ms ease-out, background 200ms ease-out" style-hover="border-color:rgba(217,164,65,0.9);background:rgba(217,164,65,0.1)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;flex:none">
+            <path d="M1.8 12S5.4 5.4 12 5.4 22.2 12 22.2 12 18.6 18.6 12 18.6 1.8 12 1.8 12Z"></path>
+            <circle cx="12" cy="12" r="3.1"></circle>
+          </svg>
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.26em;text-transform:uppercase">{{ toggleLabel }}</span>
+        </button>
+      </div>
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ program }}" as="row" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:34px 62px 1fr;gap:12px;padding:18px 0;border-top:1px solid rgba(217,164,65,0.3);align-items:start">
+            <div style="color:#D9A441;padding-top:2px;animation:iconBloom 560ms cubic-bezier(.22,.8,.3,1) both"><svg width="28" height="28" aria-hidden="true" style="display:block"><use href="{{ row.icon }}" width="28" height="28"></use></svg></div>
+            <div style="font-family:var(--kh-font);font-size:11.5px;font-weight:500;color:#D9A441;line-height:1.7;padding-top:4px">{{ row.time }}</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-family:var(--kh-font);font-size:13px;font-weight:500;color:#F6EDDF;line-height:1.85">{{ row.kh }}</div>
+              <div style="font-family:var(--en-font);font-size:8.5px;letter-spacing:0.26em;text-transform:uppercase;color:#D9A441">{{ row.en }}</div>
+            </div>
+          </div>
+        </sc-for>
+        <div style="border-top:1px solid rgba(217,164,65,0.3)"></div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isPath }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;overflow:hidden;background:radial-gradient(120% 90% at 50% 12%, #FDF8EE 0%, #F6EDDF 48%, #EADCC2 100%);padding:34px 16px 36px;display:flex;flex-direction:column;gap:18px">
+        <div aria-hidden="true" style="position:absolute;inset:0;opacity:.45;background:repeating-linear-gradient(90deg, rgba(142,27,46,0.05) 0 1px, transparent 1px 26px), repeating-linear-gradient(0deg, rgba(142,27,46,0.04) 0 1px, transparent 1px 26px)"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center">
+          <div style="font-family:var(--kh-font);font-size:13px;color:#8A1226;line-height:1.8">{{ dayKh }}</div>
+          <div style="font-family:var(--en-font);font-size:8.5px;letter-spacing:0.28em;text-transform:uppercase;color:#B07A5A">{{ dayEn }}</div>
+        </div>
+        <sc-for list="{{ programRows }}" as="row" hint-placeholder-count="4">
+          <div style="position:relative;display:flex;flex-direction:column;gap:14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <sc-for list="{{ row.items }}" as="it" hint-placeholder-count="2">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;color:#AA2740">
+                  <svg width="34" height="34" aria-hidden="true" style="display:block;animation:iconBloom 620ms cubic-bezier(.22,.8,.3,1) both"><use href="{{ it.icon }}" width="34" height="34"></use></svg>
+                  <div style="font-family:var(--kh-font);font-size:11.5px;font-weight:500;color:#8A1226;letter-spacing:0.03em">{{ it.time }}</div>
+                  <div style="font-family:var(--kh-font);font-size:12px;font-weight:400;color:#8A1226;line-height:1.85">{{ it.kh }}</div>
+                  <div style="font-family:var(--en-font);font-size:7.5px;letter-spacing:0.26em;text-transform:uppercase;color:#B07A5A">{{ it.en }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <svg viewBox="0 0 300 16" width="100%" height="14" aria-hidden="true" preserveAspectRatio="none" style="display:block;opacity:.7">
+              <path d="M6 10 C50 2 100 14 150 8 C200 2 250 14 294 6" fill="none" stroke="#AA2740" stroke-width="1"></path>
+              <circle cx="6" cy="10" r="2.4" fill="#AA2740"></circle>
+              <circle cx="150" cy="8" r="2.4" fill="#AA2740"></circle>
+              <circle cx="294" cy="6" r="2.4" fill="#AA2740"></circle>
+            </svg>
+          </div>
+        </sc-for>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- ============ VENUE ============ -->
+  <section id="venue" data-screen-label="Venue" style="background:#6E1526;padding:0 0 48px;padding-left:{{ contentInset }};padding-right:{{ contentInset }};box-sizing:border-box">
+    <div aria-hidden="true" style="padding:30px 0 0;display:flex;align-items:center;justify-content:center;gap:9px">
+      <div style="width:48px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+      <div style="width:5px;height:5px;flex:none;transform:rotate(45deg);background:#D9A441;opacity:0.75"></div>
+      <div style="width:9px;height:9px;flex:none;transform:rotate(45deg);border:1px solid #D9A441"></div>
+      <div style="width:5px;height:5px;flex:none;transform:rotate(45deg);background:#D9A441;opacity:0.75"></div>
+      <div style="width:48px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+    </div>
+    <div data-reveal="1" style="max-width:520px;margin:0 auto;padding:34px 24px 0;display:flex;flex-direction:column;gap:28px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;will-change:transform">
+        <h2 style="margin:0;font-family:var(--kh-font);font-size:17px;color:#F4DA9B;font-weight:400;line-height:1.7">ទីតាំងពិធី</h2>
+        <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#D9A441">Venue</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="position:relative;width:100%;aspect-ratio:16/10;border:1px solid rgba(217,164,65,0.45);border-radius:14px;overflow:hidden;background:#58101F">
+          <div id="kw-map" style="position:absolute;inset:0;filter:sepia(0.4) saturate(1.15) hue-rotate(-12deg) contrast(1.05)"></div>
+          <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 60px rgba(44,5,16,0.55)"></div>
+        </div>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=11.556374,104.928207" target="_blank" rel="noopener" style="align-self:center;display:flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid rgba(217,164,65,0.5);border-radius:999px;color:#D9A441;text-decoration:none;transition:background 200ms ease-out" style-hover="background:rgba(217,164,65,0.12)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;flex:none"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.6"></circle></svg>
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.26em;text-transform:uppercase">Open directions</span>
+        </a>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:rgba(217,164,65,0.28);border-radius:14px;overflow:hidden">
+        <sc-for list="{{ venue }}" as="v" hint-placeholder-count="4">
+          <div style="background:#6E1526;padding:20px 16px;display:flex;flex-direction:column;gap:8px">
+            <div style="font-family:var(--en-font);font-size:8px;letter-spacing:0.28em;text-transform:uppercase;color:#D9A441">{{ v.en }}</div>
+            <div style="font-family:var(--kh-font);font-size:12px;color:#F4DA9B;line-height:1.7">{{ v.kh }}</div>
+            <div style="font-family:var(--kh-font);font-size:12px;font-weight:300;color:#E0BFA4;line-height:1.9">{{ v.body }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <div aria-hidden="true" style="background:#F6EDDF;padding:24px 0;display:flex;align-items:center;justify-content:center;gap:14px">
+      <div style="width:60px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+      <div style="width:11px;height:11px;flex:none;transform:rotate(45deg);border:1px solid #D9A441;display:flex;align-items:center;justify-content:center">
+        <div style="width:3px;height:3px;background:#D9A441"></div>
+      </div>
+      <div style="width:60px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+    </div>
+
+  <!-- ============ GRATITUDE ============ -->
+  <section id="gratitude" data-screen-label="Gratitude" style="background:#F6EDDF;padding:52px 24px 58px;padding-left:{{ contentInsetWide }};padding-right:{{ contentInsetWide }};box-sizing:border-box;border-top:1px solid rgba(217,164,65,0.35)">
+    <div data-reveal="1" style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center">
+      <h2 style="margin:0;font-family:var(--kh-font);font-size:19px;line-height:1.7;color:#8A1226;font-weight:400">សេចក្ដីថ្លែងអំណរគុណ និងសូមអភ័យទោស</h2>
+
+      <p style="margin:0;font-family:var(--kh-font);font-size:14px;line-height:2.1;color:#6E1526;text-wrap:pretty">យើងខ្ញុំជាមាតាបិតា កូនទាំងពីរ សូមថ្លែងអំណរគុណ យ៉ាងជ្រាលជ្រៅ ចំពោះវត្តមាន ដ៏ឧត្តុង្គឧត្តមរបស់ សម្តេច ឯកឧត្តម លោកជំទាវ លោកអ្នកឧកញ៉ា អ្នកឧកញ៉ា ឧកញ៉ា លោក លោកស្រី អ្នកនាង កញ្ញា ដែលបាន អញ្ជើញចូលរួមជាកិត្តិយស ក្នុងពិធីសិរីស្វស្តីអាពាហ៍ពិពាហ៍ កូនប្រុស កូនស្រី របស់យើងខ្ញុំ នាពេលខាងមុខនេះ។ យើងខ្ញុំសូមការខន្តីអភ័យទោស ដែលពុំបានជូនលិខិតអញ្ជើញនេះ ដោយផ្ទាល់ ។ ដោយគារវកិច្ចដ៏ខ្ពង់ខ្ពស់ពីយើងខ្ញុំ។</p>
+
+      <div aria-hidden="true" style="display:flex;align-items:center;justify-content:center;gap:9px">
+        <div style="width:54px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(170,39,64,0.55))"></div>
+        <div style="width:5px;height:5px;transform:rotate(45deg);background:#AA2740"></div>
+        <div style="width:9px;height:9px;border-radius:50%;border:1px solid #AA2740"></div>
+        <div style="width:5px;height:5px;transform:rotate(45deg);background:#AA2740"></div>
+        <div style="width:54px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(170,39,64,0.55))"></div>
+      </div>
+
+      <div style="font-family:var(--en-font);font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#AA2740">Our gratitude and apology</div>
+
+      <p style="margin:0;font-family:var(--en-font);font-size:12.5px;line-height:1.95;color:#8E1B2E;text-wrap:pretty">We are extremely thankful for H.E., L.C.T., Neak Okhna, Okhna, ladies and gentlemen for your presence in the upcoming marriage of our children. We would like to apologize if this invitation has not been personally delivered by us.</p>
+    </div>
+  </section>
+
+  <!-- ============ WISHES ============ -->
+  <section id="wishes" data-screen-label="Wishes" style="background:#F6EDDF;padding:48px 24px 64px;padding-left:{{ contentInsetWide }};padding-right:{{ contentInsetWide }};box-sizing:border-box">
+    <div data-reveal="1" style="max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;will-change:transform">
+        <h2 style="margin:0;font-family:var(--kh-font);font-size:17px;color:#8E1B2E;font-weight:400;line-height:1.7">សៀវភៅជូនពរ</h2>
+        <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#AA2740">Wishes for the couple</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;padding:22px;border:1px solid rgba(142,27,46,0.2);border-radius:16px;background:#FBF5EA">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.28em;text-transform:uppercase;color:#AA2740">From · ពី</span>
+          <div style="display:flex;align-items:center;gap:8px;font-family:var(--kh-font);font-size:14px;color:#5A3418;background:rgba(142,27,46,0.05);border:1px solid rgba(142,27,46,0.18);border-radius:8px;padding:11px 12px">
+            <svg width="15" height="15" aria-hidden="true" style="flex:none;color:#AA2740"><use href="#icoLock" width="15" height="15"></use></svg>
+            <span style="line-height:1.7">{{ guestKh }}</span>
+          </div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.28em;text-transform:uppercase;color:#AA2740">Message · សារជូនពរ</span>
+          <textarea rows="3" value="{{ msgField }}" onChange="{{ onMsg }}" placeholder="សូមជូនពរដល់គូស្វាមីភរិយា ..." style="font-family:var(--kh-font);font-size:14px;color:#5A3418;background:#F6EDDF;border:1px solid rgba(142,27,46,0.25);border-radius:8px;padding:11px 12px;outline:none;resize:vertical"></textarea>
+        </label>
+        <button type="button" onClick="{{ sendWish }}" style="margin-top:4px;align-self:center;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 28px;border-radius:999px;border:1px solid #8E1B2E;background:#8E1B2E;color:#F4DA9B;cursor:pointer;font-family:var(--kh-font);transition:background 160ms ease-out" style-hover="background:#AA2740">
+          <span style="font-family:var(--kh-font);font-size:12px">ផ្ញើពរ</span>
+          <span style="font-family:var(--en-font);font-size:8px;letter-spacing:0.3em;text-transform:uppercase">Send wish</span>
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <sc-for list="{{ wishes }}" as="w" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-left:1px solid #D9A441;border-radius:0 12px 12px 0;background:#FBF5EA">
+            <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:#8E1B2E">{{ w.name }}</div>
+            <div style="font-family:var(--kh-font);font-size:13.5px;font-weight:300;color:#5A3418;line-height:1.9">{{ w.message }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer data-screen-label="Footer" style="background:#8E1B2E;padding:0 0 46px;padding-left:{{ contentInset }};padding-right:{{ contentInset }};box-sizing:border-box">
+    <div aria-hidden="true" style="padding:30px 0 0;display:flex;align-items:center;justify-content:center;gap:10px">
+      <div style="width:46px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+      <div style="width:6px;height:6px;flex:none;transform:rotate(45deg);border:1px solid #D9A441;opacity:0.7"></div>
+      <div style="width:9px;height:9px;flex:none;transform:rotate(45deg);border:1px solid #D9A441"></div>
+      <div style="width:6px;height:6px;flex:none;transform:rotate(45deg);border:1px solid #D9A441;opacity:0.7"></div>
+      <div style="width:46px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+    </div>
+    <div data-reveal="1" style="display:flex;flex-direction:column;align-items:center;gap:18px;padding:30px 24px 0;text-align:center">
+      <div style="font-family:var(--kh-font);font-size:20px;color:#F4DA9B;line-height:1.7">សូមអរគុណ</div>
+      <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#D9A441">Thank you</div>
+      <div aria-hidden="true" style="padding:0;display:flex;align-items:center;justify-content:center;gap:12px">
+      <div style="width:52px;height:1px;background:linear-gradient(to right, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+      <div style="width:7px;height:7px;flex:none;transform:rotate(45deg);border:1px solid #D9A441"></div>
+      <div style="width:52px;height:1px;background:linear-gradient(to left, rgba(217,164,65,0), rgba(217,164,65,0.7))"></div>
+    </div>
+      <div style="font-family:var(--kh-font);font-size:13px;color:#F6EDDF;line-height:2">វិជ្ជានន្ទ មករន្ទ &amp; អ៊ុង វួចនា</div>
+      <div style="font-family:var(--en-font);font-size:9px;letter-spacing:0.3em;color:#D9A441">06 . 12 . 2026</div>
+    </div>
+  </footer>
+
+  <div aria-hidden="true" style="position:absolute;left:0;top:0;bottom:0;width:{{ railW }};z-index:54;pointer-events:none;background-color:#58101F;background-image:url('kbach-rail-tile.png');background-size:{{ railW }} auto;background-repeat:repeat-y;background-position:left top"></div>
+  <div aria-hidden="true" style="position:absolute;right:0;top:0;bottom:0;width:{{ railW }};z-index:54;pointer-events:none;transform:scaleX(-1);background-color:#58101F;background-image:url('kbach-rail-tile.png');background-size:{{ railW }} auto;background-repeat:repeat-y;background-position:left top"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;railWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:22,&quot;min&quot;:6,&quot;max&quot;:48,&quot;step&quot;:1,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Ornament&quot;},&quot;guestName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;ជូន លោក / លោកស្រី ..... &quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Guest&quot;},&quot;ceremonyDate&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;2026-12-06T07:00:00+07:00&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;lockUntilOpened&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;falling&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Rose petals&quot;,&quot;options&quot;:[&quot;Rose petals&quot;,&quot;Gold dust&quot;,&quot;None&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Ornament&quot;},&quot;petalCount&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:64,&quot;min&quot;:0,&quot;max&quot;:220,&quot;step&quot;:5,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Ornament&quot;},&quot;sparkCount&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:70,&quot;min&quot;:0,&quot;max&quot;:200,&quot;step&quot;:5,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Ornament&quot;},&quot;dustCount&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:22,&quot;min&quot;:0,&quot;max&quot;:40,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Ornament&quot;},&quot;khmerFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Preahvihear&quot;,&quot;options&quot;:[&quot;Moulpali&quot;,&quot;Moul&quot;,&quot;Preahvihear&quot;,&quot;Battambang&quot;,&quot;Suwannaphum&quot;,&quot;Kantumruy Pro&quot;,&quot;Koulen&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Typography&quot;},&quot;latinFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Cinzel&quot;,&quot;options&quot;:[&quot;Cinzel&quot;,&quot;Cormorant Garamond&quot;,&quot;EB Garamond&quot;,&quot;Marcellus&quot;,&quot;Playfair Display&quot;,&quot;Jost&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Typography&quot;},&quot;mapStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Dark matter&quot;,&quot;options&quot;:[&quot;Dark matter&quot;,&quot;Dark matter (no labels)&quot;,&quot;Positron&quot;,&quot;Positron (no labels)&quot;,&quot;Voyager&quot;,&quot;Voyager (no labels)&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Map&quot;},&quot;monogram&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Khmer kbach mark&quot;,&quot;options&quot;:[&quot;Khmer kbach mark&quot;,&quot;Latin MN mark&quot;,&quot;Khmer ម ន letters&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Monogram&quot;},&quot;dateMonogram&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Khmer kbach mark&quot;,&quot;options&quot;:[&quot;Khmer kbach mark&quot;,&quot;Latin MN mark&quot;,&quot;M &amp; N lettering&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Monogram&quot;},&quot;nameFrame&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Drawn kbach&quot;,&quot;options&quot;:[&quot;Drawn kbach&quot;,&quot;Kbach frame image&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Monogram&quot;}}">
+const PROGRAM = [
+  { time: "០៥:០០ ព្រឹក", kh: "ពិធីហែជំនូន", en: "Groom's procession", icon: "#icoTray" },
+  { time: "០៦:៣០ ព្រឹក", kh: "ពិធីជាយាសីដំណើរ", en: "Welcoming rite", icon: "#icoBlessing" },
+  { time: "០៨:០០ ព្រឹក", kh: "ពិធីសូត្រមន្តជ័យតោ", en: "Monks' blessing", icon: "#icoMonk" },
+  { time: "០៩:៣០ ព្រឹក", kh: "ពិធីកាត់សក់បង្គាប់ការ", en: "Hair cutting", icon: "#icoScissors" },
+  { time: "១០:៣០ ព្រឹក", kh: "ពិធីបង្វិលពពិល និងចងដៃ", en: "Passing of blessings", icon: "#icoRings" },
+  { time: "១២:០០ ថ្ងៃត្រង់", kh: "អាហារពេលថ្ងៃត្រង់", en: "Luncheon", icon: "#icoDine" },
+  { time: "០៥:០០ ល្ងាច", kh: "ទទួលភ្ញៀវកិត្តិយស", en: "Guests received", icon: "#icoGuests" },
+  { time: "០៦:៣០ ល្ងាច", kh: "ជប់លៀង និងកម្មវិធីសិល្បៈ", en: "Reception", icon: "#icoMusic" }
+];
+
+class Component extends DCLogic {
+  state = {
+    opened: false, coverMounted: true, coverOpacity: 1,
+    now: Date.now(), music: false, nameField: "", msgField: "", programView: "list",
+    wishes: [
+      { name: "Guest name", message: "សូមជូនពរឱ្យគូស្វាមីភរិយាមានសុភមង្គលរាប់អានគ្នាជារៀងរហូត · Wishing you a lifetime of happiness together." },
+      { name: "Guest name", message: "អបអរសាទរ! សូមឱ្យសេចក្ដីស្រឡាញ់នេះនៅស្ថិតស្ថេរ · Congratulations to you both." },
+      { name: "Guest name", message: "សូមជូនពរជោគជ័យ និងសុខភាពល្អ · Health, joy and blessings always." }
+    ]
+  };
+
+  applyFonts() {
+    const r = document.documentElement;
+    r.style.setProperty("--kh-font", "'" + this.pv("khmerFont", "Preahvihear") + "', sans-serif");
+    r.style.setProperty("--en-font", "'" + this.pv("latinFont", "Cinzel") + "', serif");
+  }
+
+  componentDidUpdate(prev) {
+    if (prev.khmerFont !== this.props.khmerFont || prev.latinFont !== this.props.latinFont) this.applyFonts();
+    if (prev.mapStyle !== this.props.mapStyle) this.applyMapStyle();
+  }
+
+  componentDidMount() {
+    this.applyFonts();
+    if (this.pv("lockUntilOpened", true) !== false) document.body.style.overflow = "hidden";
+    this.timer = setInterval(() => this.setState({ now: Date.now() }), 1000);
+    if (this.pv("lockUntilOpened", true) === false) this.revealTimer = setTimeout(() => this.setupReveal(), 500);
+    this.mapTimer = setTimeout(() => this.setupMap(), 700);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer); clearTimeout(this.revealTimer);
+    clearInterval(this.sweepTimer); clearTimeout(this.failsafe); clearTimeout(this.mapTimer);
+    if (this.map) { this.map.remove(); this.map = null; this.pin = null; }
+    if (this.onScrollPx) { window.removeEventListener("scroll", this.onScrollPx); window.removeEventListener("resize", this.onScrollPx); }
+    if (this.io) this.io.disconnect();
+    document.body.style.overflow = "";
+  }
+
+  mapStyleDef() {
+    const S = {
+      "Dark matter": { url: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json", tint: "sepia(0.4) saturate(1.15) hue-rotate(-12deg) contrast(1.05)" },
+      "Dark matter (no labels)": { url: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json", tint: "sepia(0.45) saturate(1.2) hue-rotate(-12deg) contrast(1.05)" },
+      "Positron": { url: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json", tint: "sepia(0.35) saturate(0.95) contrast(1.02)" },
+      "Positron (no labels)": { url: "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json", tint: "sepia(0.4) saturate(0.9) contrast(1.02)" },
+      "Voyager": { url: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json", tint: "sepia(0.3) saturate(1.05)" },
+      "Voyager (no labels)": { url: "https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json", tint: "sepia(0.32) saturate(1.05)" }
+    };
+    return S[this.pv("mapStyle", "Dark matter")] || S["Dark matter"];
+  }
+
+  addMapPin() {
+    if (this.pin) { this.pin.remove(); this.pin = null; }
+    const el = document.createElement("div");
+    el.style.cssText = "width:20px;height:20px;border-radius:50%;background:#D9A441;border:2px solid #F4DA9B;box-shadow:0 0 0 8px rgba(217,164,65,0.22),0 0 18px rgba(217,164,65,0.6)";
+    this.pin = new maplibregl.Marker({ element: el }).setLngLat(this.mapAt).addTo(this.map);
+  }
+
+  applyMapStyle() {
+    const def = this.mapStyleDef();
+    const host = document.getElementById("kw-map");
+    if (host) host.style.filter = def.tint;
+    if (!this.map) return;
+    this.map.setStyle(def.url);
+    this.map.once("styledata", () => this.addMapPin());
+  }
+
+  setupMap() {
+    const el = document.getElementById("kw-map");
+    if (!el) return;
+    if (this.map) return;
+    if (!window.maplibregl) { this.mapTimer = setTimeout(() => this.setupMap(), 400); return; }
+    this.mapAt = [104.928207, 11.556374];
+    const def = this.mapStyleDef();
+    el.style.filter = def.tint;
+    this.map = new maplibregl.Map({
+      container: el,
+      style: def.url,
+      center: this.mapAt, zoom: 14.2, attributionControl: false, cooperativeGestures: true
+    });
+    this.map.addControl(new maplibregl.AttributionControl({ compact: true }));
+    this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+    this.addMapPin();
+  }
+
+  setupReveal() {
+    if (this.io) return;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const els = document.querySelectorAll("[data-reveal]");
+    this.io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          this.settle(e.target);
+          this.io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: "0px 0px -14% 0px" });
+    let n = 0;
+    let prevParent = null;
+    const EASE = "cubic-bezier(0.16,0.84,0.28,1)";
+    els.forEach((el) => {
+      const kind = el.getAttribute("data-reveal");
+      if (kind === "stagger") {
+        if (el.parentElement !== prevParent) { n = 0; prevParent = el.parentElement; }
+        el.style.transitionDelay = Math.min(n * 75, 420) + "ms";
+        n++;
+        el.style.transition = "opacity 620ms ease-out, transform 820ms " + EASE;
+        el.style.transform = "translateY(16px) scale(0.975)";
+      } else if (kind === "line") {
+        el.style.transition = "opacity 520ms ease-out, transform 880ms " + EASE;
+        el.style.transform = "scaleX(0.2)";
+        el.style.transformOrigin = "50% 50%";
+      } else {
+        el.style.transition = "opacity 760ms ease-out, transform 980ms " + EASE + ", filter 760ms ease-out";
+        el.style.transform = "translateY(22px)";
+        el.style.filter = "blur(5px)";
+        const kids = Array.prototype.slice.call(el.children);
+        if (kids.length > 1 && kids.length <= 10) {
+          kids.forEach((c, ci) => {
+            const d = 90 + ci * 95;
+            if (c.hasAttribute && c.hasAttribute("data-sfx")) {
+              c.style.transition = "opacity 620ms ease-out " + d + "ms";
+            } else {
+              c.style.transition = "opacity 620ms ease-out " + d + "ms, transform 760ms " + EASE + " " + d + "ms";
+              c.style.transform = "translateY(14px)";
+            }
+            c.style.opacity = "0";
+            c.setAttribute("data-reveal-kid", "1");
+          });
+        }
+      }
+      el.style.opacity = "0";
+      el.style.willChange = "opacity, transform";
+      this.io.observe(el);
+    });
+    this.setupParallax();
+    requestAnimationFrame(() => this.sweepReveal());
+    this.sweepTimer = setInterval(() => this.sweepReveal(), 400);
+    this.failsafe = null;
+  }
+
+  settle(el) {
+    el.style.opacity = "1";
+    el.style.transform = "none";
+    if (el.style.filter) el.style.filter = "none";
+    Array.prototype.slice.call(el.children).forEach((c) => {
+      if (c.getAttribute && c.getAttribute("data-reveal-kid")) {
+        c.style.opacity = "1";
+        if (!(c.hasAttribute && c.hasAttribute("data-sfx"))) c.style.transform = "none";
+      }
+    });
+    setTimeout(() => { el.style.willChange = ""; }, 800);
+  }
+
+  setupParallax() {
+    const nodes = Array.from(document.querySelectorAll("[data-parallax]"));
+    const fx = Array.from(document.querySelectorAll("[data-sfx]"));
+    if (!nodes.length && !fx.length) return;
+    let queued = false;
+    const draw = () => {
+      queued = false;
+      const vh = window.innerHeight;
+      nodes.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -80 || r.top > vh + 80) return;
+        const p = (r.top + r.height / 2 - vh / 2) / vh; // -1..1 through the viewport
+        const amt = parseFloat(el.getAttribute("data-parallax")) || 0.035;
+        const base = el.getAttribute("data-base-transform") || (el.setAttribute("data-base-transform", el.style.transform || ""), el.style.transform || "");
+        el.style.transform = "translate3d(0," + (-p * vh * amt).toFixed(1) + "px,0) " + base;
+      });
+      fx.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -120 || r.top > vh + 120) return;
+        const p = Math.max(-1.2, Math.min(1.2, (r.top + r.height / 2 - vh / 2) / vh));
+        const k = el.getAttribute("data-sfx");
+        const near = 1 - Math.min(1, Math.abs(p));
+        if (k === "turn") el.style.transform = "translate(-50%,-50%) rotate(" + (p * 26).toFixed(1) + "deg) scale(" + (0.9 + near * 0.16).toFixed(3) + ")";
+        else if (k === "rule") el.style.transform = "scaleX(" + (0.35 + near * 0.65).toFixed(3) + ")";
+        else if (k === "zoom") el.style.transform = "scale(" + (1.1 - near * 0.1).toFixed(3) + ") translate3d(0," + (-p * vh * 0.03).toFixed(1) + "px,0)";
+      });
+    };
+    this.onScrollPx = () => { if (!queued) { queued = true; requestAnimationFrame(draw); } };
+    window.addEventListener("scroll", this.onScrollPx, { passive: true });
+    window.addEventListener("resize", this.onScrollPx);
+    draw();
+  }
+
+  sweepReveal() {
+    document.querySelectorAll("[data-reveal]").forEach((el) => {
+      if (el.style.opacity !== "0") return;
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.9 && r.bottom > 0) {
+        this.settle(el);
+        if (this.io) this.io.unobserve(el);
+      }
+    });
+  }
+
+  revealAll() {
+    document.querySelectorAll("[data-reveal]").forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight) { this.settle(el); if (this.io) this.io.unobserve(el); }
+    });
+  }
+
+  openInvitation = () => {
+    document.body.style.overflow = "";
+    this.setState({ opened: true, coverOpacity: 0 });
+    this.setupReveal();
+    requestAnimationFrame(() => this.sweepReveal());
+    setTimeout(() => this.setState({ coverMounted: false }), 760);
+    this.armShine();
+  };
+
+  pv(name, def) {
+    if (!this._q) {
+      let q = {};
+      try { new URLSearchParams(window.location.search).forEach((v, k) => { q[k] = v; }); } catch (e) {}
+      this._q = q;
+    }
+    const raw = this._q[name];
+    if (raw === undefined || raw === "") {
+      const p = this.props[name];
+      return (p === undefined || p === null || p === "") ? def : p;
+    }
+    if (typeof def === "number") { const n = parseFloat(raw); return isNaN(n) ? def : n; }
+    if (typeof def === "boolean") return raw === "1" || raw === "true";
+    return raw;
+  }
+
+  railWidth() {
+    const n = this.pv("rail", this.pv("railWidth", 22));
+    return Math.max(6, Math.min(48, isNaN(n) ? 22 : n));
+  }
+
+  petals() {
+    const n = Math.max(0, Math.round(this.pv("petalCount", 64)));
+    if (!this._petals || this._petalN !== n) {
+      this._petalN = n;
+      const out = [];
+      const band = 92 / n;
+      for (let i = 0; i < n; i++) {
+        const r = (k) => ((Math.sin((i + 1) * k) + 1) / 2);
+        const col = (i * 17) % n;
+        const delayS = i < 10 ? i * 0.3 : 3 + (i - 10) * 1.4 + r(3.77) * 1.1;
+        const dur = 70 + r(7.233) * 45, sway = 5 + r(9.11) * 4, gust = 9 + r(6.41) * 9, flutter = 3.2 + r(8.07) * 3;
+        out.push({
+          fall: (i % 3 === 0) ? "petalFall" : "petalVanish",
+          sym: (i % 2 === 0) ? "#petalShape" : "#petalShapeLt",
+          driftN: Math.max(1, Math.floor(dur / sway)),
+          gustN: Math.max(1, Math.floor(dur / gust)),
+          flutterN: Math.max(1, Math.floor(dur / flutter)),
+          left: (3 + col * band + r(12.9898) * band * 0.7).toFixed(1) + "%",
+          size: (8.5 + r(4.1414) * 5).toFixed(1) + "px",
+          tall: ((8.5 + r(4.1414) * 5) * 1.06).toFixed(1) + "px",
+          dur: dur.toFixed(1) + "s",
+          delay: delayS.toFixed(1) + "s",
+          land: (delayS + dur - 0.3).toFixed(1) + "s",
+          land2: (delayS + dur).toFixed(1) + "s",
+          fade: (i % 3 === 0) ? "none" : ("petalFadeOut 1.6s ease-out " + (delayS + dur + 1.2).toFixed(1) + "s 1 forwards"),
+          end: (95.5 + r(2.19) * 3.6).toFixed(2) + "%",
+          sway: sway.toFixed(1) + "s",
+          gust: gust.toFixed(1) + "s",
+          flutter: flutter.toFixed(1) + "s",
+          op: (0.26 + r(5.31) * 0.3).toFixed(2)
+        });
+      }
+      this._petals = out;
+    }
+    return this._petals;
+  }
+
+  fallStyle() {
+    const v = this.pv("falling", "Rose petals");
+    return (v === "Gold dust" || v === "Rose petals" || v === "None") ? v : "Rose petals";
+  }
+
+  sparks() {
+    const n = Math.max(0, Math.round(this.pv("sparkCount", 70)));
+    if (!this._sparks || this._sparkN !== n) {
+      this._sparkN = n;
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const r = (k) => ((Math.sin((i + 1) * k) + 1) / 2);
+        const sz = 2 + r(4.1414) * 3.4;
+        out.push({
+          left: (2 + ((i * 23) % n) * (95 / n) + r(12.9898) * 3).toFixed(2) + "%",
+          top: (((i * 37) % n) * (100 / n) + r(7.71) * (60 / n)).toFixed(2) + "%",
+          size: sz.toFixed(1) + "px",
+          halo: (sz * 1.8).toFixed(1) + "px",
+          dur: (3.4 + r(6.41) * 4.2).toFixed(1) + "s",
+          drift: (6 + r(9.11) * 5).toFixed(1) + "s",
+          delay: (r(3.77) * 7).toFixed(1) + "s"
+        });
+      }
+      this._sparks = out;
+    }
+    return this._sparks;
+  }
+
+  armShine() {
+    const tick = () => {
+      const el = this.shineEl;
+      if (!el) return setTimeout(tick, 120);
+      const io = new IntersectionObserver((ents) => {
+        if (ents.some(e => e.isIntersecting)) {
+          io.disconnect();
+          setTimeout(() => this.setState({ shine: true }), 500);
+        }
+      }, { threshold: 0.6 });
+      io.observe(el);
+    };
+    tick();
+  }
+
+  guestName() {
+    return this.pv("to", "") || this.pv("guestName", "ជូន លោក / លោកស្រី ..... ");
+  }
+
+  countdown() {
+    const target = new Date(this.pv("ceremonyDate", "2026-12-06T07:00:00+07:00")).getTime();
+    let diff = target - this.state.now;
+    if (diff <= 0) return { passed: true, d: "00", h: "00", m: "00", s: "00" };
+    const p = (n) => String(n).padStart(2, "0");
+    const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+    const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+    const m = Math.floor(diff / 60000); diff -= m * 60000;
+    return { passed: false, d: p(d), h: p(h), m: p(m), s: p(Math.floor(diff / 1000)) };
+  }
+
+  dust() {
+    const n = Math.round(this.pv("dustCount", 22));
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const r = (i * 9301 + 49297) % 233280 / 233280;
+      const r2 = (i * 4523 + 7919) % 100 / 100;
+      out.push({
+        left: Math.round(r * 96 + 2) + "%",
+        bottom: Math.round(r2 * 70) + "%",
+        dur: (7 + r2 * 9).toFixed(1) + "s",
+        delay: (r * 10).toFixed(1) + "s"
+      });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const mono = this.pv("monogram", "Khmer kbach mark");
+    const dMono = this.pv("dateMonogram", "Khmer kbach mark");
+    return {
+      monoImage: mono !== "Khmer ម ន letters",
+      monoText: mono === "Khmer ម ន letters",
+      monoSrc: mono === "Latin MN mark" ? "monogram-mn-gold.png" : "monogram-crest.png",
+      dateMonoImage: dMono !== "M & N lettering",
+      dateMonoType: dMono === "M & N lettering",
+      dateMonoSrc: dMono === "Latin MN mark" ? "monogram-mn-gold.png" : "monogram-crest.png",
+      opened: this.state.opened,
+      coverMounted: this.state.coverMounted,
+      coverOpacity: this.state.coverOpacity,
+      coverPointer: this.state.opened ? "none" : "auto",
+      openInvitation: this.openInvitation,
+      railW: this.railWidth() + "px",
+      coverRailW: (this.railWidth() + 2) + "px",
+      frameInset: (this.railWidth() + 8) + "px",
+      contentInset: this.railWidth() + "px",
+      contentInsetWide: (this.railWidth() + 16) + "px",
+      nameFrameImg: (this.pv("nameFrame", "Drawn kbach") === "Kbach frame image") ? "url('kbach-name-frame.png') 46 / 46px / 0 round" : "none",
+      guestKh: this.guestName(),
+      guestShine: this.state.shine ? "shineOnce 2.4s cubic-bezier(.32,0,.28,1) 2 both" : "none",
+      shineRef: (el) => { this.shineEl = el; },
+      dust: this.dust(),
+      petals: (this.state.opened && this.fallStyle() === "Rose petals") ? this.petals() : [],
+      sparks: (this.state.opened && this.fallStyle() === "Gold dust") ? this.sparks() : [],
+      musicIcon: this.state.music ? "\u266B" : "\u266A",
+      musicLabel: this.state.music ? "Pause music" : "Play music",
+      toggleMusic: () => this.setState((s) => ({ music: !s.music })),
+      nameField: this.state.nameField,
+      msgField: this.state.msgField,
+      onName: (e) => this.setState({ nameField: e.target.value }),
+      onMsg: (e) => this.setState({ msgField: e.target.value }),
+      sendWish: () => {
+        const name = this.guestName();
+        const message = this.state.msgField.trim();
+        if (!message) return;
+        this.setState((s) => ({ wishes: [{ name, message }].concat(s.wishes), msgField: "" }));
+      },
+      wishes: this.state.wishes,
+      isList: this.state.programView !== "path",
+      isPath: this.state.programView === "path",
+      listFg: this.state.programView !== "path" ? "#6E1526" : "#D9A441",
+      pathFg: this.state.programView === "path" ? "#6E1526" : "#D9A441",
+      pillLeft: this.state.programView === "path" ? "55px" : "5px",
+      listAnim: this.state.programView !== "path" ? "iconBreathe 2600ms ease-in-out infinite" : "none",
+      pathAnim: this.state.programView === "path" ? "iconSway 3000ms ease-in-out infinite" : "none",
+      toggleView: () => this.setState((s) => ({ programView: s.programView === "path" ? "list" : "path" })),
+      toggleLabel: this.state.programView === "path" ? "View timeline" : "View scroll",
+      toggleAria: this.state.programView === "path" ? "Switch to timeline view" : "Switch to ceremonial scroll view",
+      showList: () => this.setState({ programView: "list" }),
+      showPath: () => this.setState({ programView: "path" }),
+      dayKh: "ថ្ងៃអាទិត្យ ទី៦ ខែធ្នូ ឆ្នាំ២០២៦",
+      dayEn: "Sunday 6 December 2026",
+      program: PROGRAM,
+      programRows: PROGRAM.reduce((acc, it, i) => {
+        if (i % 2 === 0) acc.push({ items: [it] }); else acc[acc.length - 1].items.push(it);
+        return acc;
+      }, []),
+      venue: [
+        { en: "Address", kh: "អាសយដ្ឋាន", body: "ឈ្មោះសាល · ផ្លូវលេខ ..... សង្កាត់ ..... ខណ្ឌ ..... រាជធានីភ្នំពេញ" },
+        { en: "Parking", kh: "ចំណតរថយន្ត", body: "ចំណតឥតគិតថ្លៃនៅខាងក្រោយសាល · Free parking at the rear" },
+        { en: "Dress code", kh: "ការស្លៀកពាក់", body: "សំលៀកបំពាក់ប្រពៃណីខ្មែរ ឬឈុតផ្លូវការ · Khmer traditional or formal" },
+        { en: "Contact", kh: "ទំនាក់ទំនង", body: "លោក ..... · 0XX XXX XXX · កញ្ញា ..... · 0XX XXX XXX" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

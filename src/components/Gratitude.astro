@@ -1,0 +1,34 @@
+---
+import { wedding } from '@/content/wedding';
+const { gratitude } = wedding;
+---
+<section id="gratitude" class="gratitude">
+  <div data-reveal class="inner">
+    <h2 class="kh heading">សេចក្ដីថ្លែងអំណរគុណ និងសូមអភ័យទោស</h2>
+    <p class="kh body-kh">{gratitude.kh}</p>
+    <div class="orn" aria-hidden="true">
+      <div class="line r"></div>
+      <div class="dot"></div>
+      <div class="ring"></div>
+      <div class="dot"></div>
+      <div class="line l"></div>
+    </div>
+    <div class="en caps kick">Our gratitude and apology</div>
+    <p class="en body-en">{gratitude.en}</p>
+  </div>
+</section>
+
+<style>
+  .gratitude { background: var(--cream); padding: 52px var(--inset-wide) 58px; border-top: 1px solid var(--gold-a35); }
+  .inner { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center; }
+  .heading { font-size: 19px; line-height: 1.7; color: var(--wine-700); }
+  .body-kh { font-size: 14px; line-height: 2.1; color: var(--wine-800); text-wrap: pretty; }
+  .orn { display: flex; align-items: center; justify-content: center; gap: 9px; }
+  .line { width: 54px; height: 1px; }
+  .line.r { background: linear-gradient(to right, var(--gold-0), rgba(170, 39, 64, 0.55)); }
+  .line.l { background: linear-gradient(to left, var(--gold-0), rgba(170, 39, 64, 0.55)); }
+  .dot { width: 5px; height: 5px; transform: rotate(45deg); background: var(--rose); }
+  .ring { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--rose); }
+  .kick { font-size: 10px; letter-spacing: 0.3em; color: var(--rose); }
+  .body-en { font-size: 12.5px; line-height: 1.95; color: var(--wine-600); text-wrap: pretty; }
+</style>

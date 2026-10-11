@@ -1,0 +1,14 @@
+---
+// Kbach ornament rails down both edges of the invitation.
+---
+<div class="rail rail-left" aria-hidden="true"></div>
+<div class="rail rail-right" aria-hidden="true"></div>
+
+<style>
+  .rail {
+    position: absolute; top: 0; bottom: 0; width: var(--rail); z-index: 54; pointer-events: none;
+    background: var(--wine-900) url('/assets/kbach-rail-tile.png') left top / var(--rail) auto repeat-y;
+  }
+  .rail-left { left: 0; }
+  .rail-right { right: 0; transform: scaleX(-1); }
+</style>

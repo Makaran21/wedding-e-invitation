@@ -1,0 +1,30 @@
+---
+import Base from '@/layouts/Base.astro';
+import Cover from '@/components/islands/Cover';
+import FallingLayer from '@/components/islands/FallingLayer';
+import SaveTheDate from '@/components/SaveTheDate.astro';
+import Letter from '@/components/Letter.astro';
+import CouplePhoto from '@/components/CouplePhoto.astro';
+import Divider from '@/components/Divider.astro';
+import Gallery from '@/components/Gallery.astro';
+import ProgramSection from '@/components/ProgramSection.astro';
+import Venue from '@/components/Venue.astro';
+import Gratitude from '@/components/Gratitude.astro';
+import WishesSection from '@/components/WishesSection.astro';
+import Footer from '@/components/Footer.astro';
+---
+<Base>
+  <FallingLayer client:idle />
+  <Cover client:load />
+  <SaveTheDate />
+  <Letter />
+  <CouplePhoto />
+  <Divider />
+  <Gallery />
+  <ProgramSection />
+  <Venue />
+  <Divider variant="dot" />
+  <Gratitude />
+  <WishesSection />
+  <Footer />
+</Base>

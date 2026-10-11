@@ -1,0 +1,25 @@
+---
+import { wedding } from '@/content/wedding';
+import Photo from './Photo.astro';
+const { couple, date, photos } = wedding;
+---
+<section class="couple">
+  <div data-reveal class="frame">
+    <div data-sfx="zoom" class="zoom"><Photo src={photos.couple} label="Couple portrait · 4:5" alt={`${couple.groom.en} and ${couple.bride.en}`} /></div>
+    <div class="shade"></div>
+    <div class="caption">
+      <div class="en caps names">{couple.groom.en}<br />&amp;<br />{couple.bride.en}</div>
+      <div class="en dots">{date.dots}</div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .couple { position: relative; background: var(--wine-800); padding: 0 var(--inset); }
+  .frame { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--photo-bg); }
+  .zoom { position: absolute; inset: -8% 0; transform-origin: 50% 50%; will-change: transform; }
+  .shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(44,5,16,0.92) 0%, rgba(74,10,23,0.45) 32%, rgba(74,10,23,0) 62%); }
+  .caption { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .names { font-size: 12px; letter-spacing: 0.3em; color: var(--gold-lt); text-align: center; line-height: 2.1; }
+  .dots { font-size: 9px; letter-spacing: 0.3em; color: var(--gold); }
+</style>

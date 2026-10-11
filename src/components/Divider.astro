@@ -1,0 +1,20 @@
+---
+// Cream band divider between sections.
+interface Props { variant?: 'diamond' | 'dot' }
+const { variant = 'diamond' } = Astro.props;
+---
+<div class="divider" aria-hidden="true">
+  <div class="rule-fade-r line"></div>
+  {variant === 'diamond'
+    ? <div class="diamond"></div>
+    : <div class="diamond dot"><div></div></div>}
+  <div class="rule-fade-l line"></div>
+</div>
+
+<style>
+  .divider { background: var(--cream); padding: 24px 0; display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .line { width: 60px; }
+  .diamond { width: 9px; height: 9px; flex: none; transform: rotate(45deg); border: 1px solid var(--gold); }
+  .dot { width: 11px; height: 11px; display: flex; align-items: center; justify-content: center; }
+  .dot div { width: 3px; height: 3px; background: var(--gold); }
+</style>
