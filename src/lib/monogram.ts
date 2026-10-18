@@ -7,6 +7,7 @@ export interface Monogram { src: string; /** Square artwork (vs. the tall kbach 
 /** Image for a monogram setting, or null when the setting asks for lettering instead. */
 export function monogramSrc(choice: Settings['monogram'] | Settings['dateMonogram']): Monogram | null {
   switch (choice) {
+    case 'Khmer card mark': return { src: '/assets/monogram-card-gold.png', square: true };
     case 'Khmer ម ន mark': return { src: '/assets/monogram-khmer-gold.png', square: true };
     case 'Latin MN mark': return { src: '/assets/monogram-mn-gold.png', square: true };
     case 'Khmer kbach mark': return { src: '/assets/monogram-crest.png', square: false };

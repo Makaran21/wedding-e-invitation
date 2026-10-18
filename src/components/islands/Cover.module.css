@@ -51,7 +51,7 @@
 .seal { position: relative; width: 156px; height: 156px; display: flex; align-items: center; justify-content: center; }
 .sealRing { position: absolute; inset: 0; }
 .sealImg { position: relative; width: 76px; height: 108px; object-fit: contain; pointer-events: none; }
-.sealImgSquare { position: relative; width: 112px; height: 112px; object-fit: contain; pointer-events: none; }
+.sealImgSquare { position: relative; width: 88px; height: 88px; object-fit: contain; pointer-events: none; }
 .sealText { position: relative; font-family: var(--kh-font); font-size: 38px; color: var(--gold-lt); letter-spacing: 0.06em; line-height: 1; }
 
 .names { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }

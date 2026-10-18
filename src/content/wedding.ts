@@ -29,8 +29,8 @@ export interface Settings {
   dustCount: number;
   khmerFont: KhmerFont;
   latinFont: LatinFont;
-  monogram: 'Khmer ម ន mark' | 'Khmer kbach mark' | 'Latin MN mark' | 'Khmer ម ន letters';
-  dateMonogram: 'Khmer ម ន mark' | 'Khmer kbach mark' | 'Latin MN mark' | 'M & N lettering';
+  monogram: 'Khmer card mark' | 'Khmer ម ន mark' | 'Khmer kbach mark' | 'Latin MN mark' | 'Khmer ម ន letters';
+  dateMonogram: 'Khmer card mark' | 'Khmer ម ន mark' | 'Khmer kbach mark' | 'Latin MN mark' | 'M & N lettering';
   mapStyle: MapStyle;
   /** Keep the page covered (and unscrollable) until the guest taps "Open invitation". */
   lockUntilOpened: boolean;
@@ -45,6 +45,7 @@ export interface WeddingContent {
   };
   guestDefault: string;
   parents: [string, string, string, string];
+  parentsEn: [string, string, string, string];
   letter: { inviteKh: string; inviteEn: string; detailsKh: string; detailsEn: string };
   program: ProgramItem[];
   venue: { lat: number; lng: number; zoom: number; details: VenueDetail[] };
@@ -65,7 +66,7 @@ export const wedding: WeddingContent = {
   date: {
     iso: '2026-12-06T07:00:00+07:00',
     dots: '06 . 12 . 2026',
-    lunarKh: 'ថ្ងៃអាទិត្យ ១២រោច ខែកត្តឹ',
+    lunarKh: 'ថ្ងៃអាទិត្យ ១២រោច ខែកត្តិក',
     day: '06',
     monthKh: 'ធ្នូ',
     monthEn: 'December',
@@ -78,25 +79,28 @@ export const wedding: WeddingContent = {
   // Shown when the link has no ?to=… — personalise a link with e.g. /?to=លោក%20សុខ
   guestDefault: 'ជូន លោក / លោកស្រី ..... ',
 
-  // The four parent names at the top of the letter (left→right, top→bottom).
-  parents: ['លោក ..... ', 'លោក ..... ', 'លោកជំទាវ ..... ', 'លោកស្រី ..... '],
+  // The four parent names in the letter (left→right, top→bottom), in Khmer and English.
+  parents: ['លោក ខៀវ វិជ្ជានន្ទ', 'លោក អ៊ុង ស៊ីណាត', 'លោកស្រី សេង ពិសិដ្ឋនារី', 'លោកស្រី សៅ សុជាតិ'],
+  parentsEn: ['Mr. Khieu Vicheanon', 'Mr. Ung Sinath', 'Mrs. Seng Pisethneary', 'Mrs. Sao Socheat'],
 
   letter: {
-    inviteKh: 'សម្តេច ឯកឧត្តម លោកជំទាវ លោកអ្នកឧកញ៉ា អ្នកឧកញ៉ា ឧកញ៉ា លោក លោកស្រី អ្នកនាង កញ្ញា អញ្ជើញជាអធិបតី និងជាភ្ញៀវកិត្តិយស ដើម្បីប្រសិទ្ធពរជ័យសិរីសួស្តី ជូនមង្គល ក្នុងពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍ កូនប្រុស–កូនស្រី របស់យើងខ្ញុំ',
-    inviteEn: 'We respectfully request the honour of your presence at the wedding ceremony of our son and daughter.',
-    detailsKh: 'ដែលនឹងប្រព្រឹត្តទៅនៅថ្ងៃអាទិត្យ ទី៦ ខែធ្នូ ឆ្នាំ២០២៦ ត្រូវនឹងថ្ងៃ ..... ខែធ្នូ ឆ្នាំម្មី អដ្ឋសក ព.ស ២៥៧០ វេលាម៉ោង ..... នៅ ..... ',
-    detailsEn: 'Sunday 6 December 2026 · ..... · reception from .....',
+    inviteKh: 'ឯកឧត្តម លោកជំទាវ លោកអ្នកឧកញ៉ា អ្នកឧកញ៉ា ឧកញ៉ា លោក លោកស្រី អ្នកនាង កញ្ញា អញ្ជើញចូលរួមជាអធិបតី និងជាភ្ញៀវកិត្តិយស ដើម្បីប្រសិទ្ធិពរជ័យ សិរីសួស្តី ជ័យមង្គល ក្នុងពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍ កូនប្រុស កូនស្រី របស់យើងខ្ញុំ។',
+    inviteEn: 'Have the honor of requesting your esteemed presence at the auspicious occasion of our wedding ceremony.',
+    detailsKh: 'ដែលនឹងប្រព្រឹត្តទៅនាថ្ងៃ អាទិត្យ ១២រោច ខែកត្តិក ឆ្នាំមមី អដ្ឋស័ក ពុទ្ធសករាជ ២៥៧០ ត្រូវនឹងថ្ងៃទី ០៦ ខែ ធ្នូ ឆ្នាំ ២០២៦ វេលាម៉ោង ៥:០០ល្ងាច ស្ថិតនៅ វិមានពិភពថ្មីសែនសុខ (អគារ B) ។',
+    // Shown under "Which will be held"; each line break starts a new line.
+    detailsEn: 'On Sunday, 06 December 2026, at 5:00 PM\nAt Vimean Piphub Thmey Sen Sok (Building B)',
   },
 
   program: [
-    { time: '០៥:០០ ព្រឹក', kh: 'ពិធីហែជំនូន', en: "Groom's procession", icon: 'icoTray' },
-    { time: '០៦:៣០ ព្រឹក', kh: 'ពិធីជាយាសីដំណើរ', en: 'Welcoming rite', icon: 'icoBlessing' },
-    { time: '០៨:០០ ព្រឹក', kh: 'ពិធីសូត្រមន្តជ័យតោ', en: "Monks' blessing", icon: 'icoMonk' },
-    { time: '០៩:៣០ ព្រឹក', kh: 'ពិធីកាត់សក់បង្គាប់ការ', en: 'Hair cutting', icon: 'icoScissors' },
-    { time: '១០:៣០ ព្រឹក', kh: 'ពិធីបង្វិលពពិល និងចងដៃ', en: 'Passing of blessings', icon: 'icoRings' },
-    { time: '១២:០០ ថ្ងៃត្រង់', kh: 'អាហារពេលថ្ងៃត្រង់', en: 'Luncheon', icon: 'icoDine' },
-    { time: '០៥:០០ ល្ងាច', kh: 'ទទួលភ្ញៀវកិត្តិយស', en: 'Guests received', icon: 'icoGuests' },
-    { time: '០៦:៣០ ល្ងាច', kh: 'ជប់លៀង និងកម្មវិធីសិល្បៈ', en: 'Reception', icon: 'icoMusic' },
+    { time: '០៦:៣០ ព្រឹក', kh: 'ជួបជុំភ្ញៀវកិត្តិយស ដើម្បីរៀបចំពិធីហែជំនូន', en: 'Guests gather for the procession', icon: 'icoGuests' },
+    { time: '០៧:០០ ព្រឹក', kh: 'ពិធីហែជំនូនកំណត់ ចូលរោងជ័យ', en: "Groom's procession", icon: 'icoTray' },
+    { time: '០៧:៣០ ព្រឹក', kh: 'អញ្ជើញភ្ញៀវកិត្តិយស ពិសារអាហារពេលព្រឹក', en: 'Breakfast', icon: 'icoDine' },
+    { time: '០៨:០០ ព្រឹក', kh: 'ពិធីចៅមហានិយាយជើងការ រៀបរាប់ផ្លែឈើ និងបំពាក់ចិញ្ចៀន', en: 'Matchmaker rite & exchange of rings', icon: 'icoRings' },
+    { time: '០៨:៣០ ព្រឹក', kh: 'ពិធីសូត្រមន្ត ចម្រើនព្រះបរិត្ត', en: "Monks' blessing", icon: 'icoMonk' },
+    { time: '០៩:៣០ ព្រឹក', kh: 'ពិធីកាត់សក់បង្កក់សិរី កូនប្រុស–កូនស្រី', en: 'Hair cutting', icon: 'icoScissors' },
+    { time: '១១:០០ ព្រឹក', kh: 'ពិធីសំពះផ្ទឹមសែនចងដៃ បង្វិលពពិល និងព្រះថោងតោងស្បៃ', en: 'Knot-tying & passing of blessings', icon: 'icoBlessing' },
+    { time: '១២:០០ ថ្ងៃត្រង់', kh: 'អញ្ជើញភ្ញៀវកិត្តិយស ពិសារអាហារពេលថ្ងៃត្រង់ បញ្ចប់កិច្ចអាពាហ៍ពិពាហ៍', en: 'Luncheon & close of ceremony', icon: 'icoDine' },
+    { time: '០៥:០០ ល្ងាច', kh: 'អញ្ជើញភ្ញៀវកិត្តិយស ពិសារភោជនាហារពេលល្ងាច', en: 'Evening reception', icon: 'icoMusic' },
   ],
 
   venue: {
@@ -104,7 +108,7 @@ export const wedding: WeddingContent = {
     lng: 104.928207,
     zoom: 14.2,
     details: [
-      { en: 'Address', kh: 'អាសយដ្ឋាន', body: 'ឈ្មោះសាល · ផ្លូវលេខ ..... សង្កាត់ ..... ខណ្ឌ ..... រាជធានីភ្នំពេញ' },
+      { en: 'Address', kh: 'អាសយដ្ឋាន', body: 'វិមានពិភពថ្មីសែនសុខ (អគារ B) · Vimean Piphub Thmey Sen Sok (Building B)' },
       { en: 'Parking', kh: 'ចំណតរថយន្ត', body: 'ចំណតឥតគិតថ្លៃនៅខាងក្រោយសាល · Free parking at the rear' },
       { en: 'Dress code', kh: 'ការស្លៀកពាក់', body: 'សំលៀកបំពាក់ប្រពៃណីខ្មែរ ឬឈុតផ្លូវការ · Khmer traditional or formal' },
       { en: 'Contact', kh: 'ទំនាក់ទំនង', body: 'លោក ..... · 0XX XXX XXX · កញ្ញា ..... · 0XX XXX XXX' },
@@ -153,8 +157,9 @@ export const wedding: WeddingContent = {
     dustCount: 28,
     khmerFont: 'Preahvihear',
     latinFont: 'Playfair Display',
-    monogram: 'Khmer kbach mark',
-    dateMonogram: 'Khmer kbach mark',
+    // 'Khmer card mark' is the monogram printed on the invitation card; the previous choice was 'Khmer kbach mark'.
+    monogram: 'Khmer card mark',
+    dateMonogram: 'Khmer card mark',
     mapStyle: 'Dark matter',
     lockUntilOpened: true,
   },

@@ -14,6 +14,7 @@
   --gold: #D9A441;
   --gold-lt: #F4DA9B;
   --gold-pale: #EBC97E;
+  --gold-dk: #B57D2E;
   --cream: #F6EDDF;
   --cream-lt: #FBF5EA;
   --paper: #FDF8EE;
@@ -66,6 +67,13 @@ a:hover { color: var(--gold-lt); }
 *:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 2px; }
 input::placeholder, textarea::placeholder { color: #A98B69; }
 h1, h2, p { margin: 0; font-weight: 400; }
+
+/* Khmer OS Muol Light, used for the couple's names in the letter. */
+@font-face {
+  font-family: 'Khmer OS Muol Light';
+  src: url('/fonts/KhmerOSMuolLight.ttf') format('truetype');
+  font-display: swap;
+}
 
 .kh { font-family: var(--kh-font); }
 .en { font-family: var(--en-font); }

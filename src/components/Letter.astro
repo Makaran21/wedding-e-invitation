@@ -1,6 +1,6 @@
 ---
 import { wedding } from '@/content/wedding';
-const { couple, date, parents, letter } = wedding;
+const { couple, parents, parentsEn, letter } = wedding;
 ---
 <section id="letter" class="letter">
   <div class="paper">
@@ -8,6 +8,7 @@ const { couple, date, parents, letter } = wedding;
     <div data-reveal class="body">
       <h2 class="kh heading">សិរីមង្គលអាពាហ៍ពិពាហ៍</h2>
 
+      <!-- Khmer half, as printed on the top of the card -->
       <div class="kh parents">
         {parents.map((p) => <div>{p}</div>)}
       </div>
@@ -15,37 +16,47 @@ const { couple, date, parents, letter } = wedding;
       <div class="kh honour">មានកិត្តិយសសូមគោរពអញ្ជើញ</div>
 
       <p class="kh invite-kh">{letter.inviteKh}</p>
-      <p class="en invite-en">{letter.inviteEn}</p>
 
-      <div class="couple">
+      <div class="couple kh-row">
         <div class="who">
           <span class="kh role">កូនប្រុសនាម</span>
           <span class="kh name">{couple.groom.kh}</span>
-          <span class="en caps latin">{couple.groom.en}</span>
         </div>
-        <div class="heart">
-          <svg viewBox="0 0 54 50" width="50" height="46" role="img" aria-label="&">
-            <path d="M27 46 C20 40 3 30 3 16 C3 8 9 3 16 3 C21 3 25 6 27 10 C29 6 33 3 38 3 C45 3 51 8 51 16 C51 30 34 40 27 46 Z"
-                  fill="#8E1B2E" stroke="#D9A441" stroke-width="1.2" stroke-linejoin="round"></path>
-            <path d="M27 40 C21 35 8 27 8 16.5 C8 11 12 8 16.5 8 C20.5 8 24 10.5 27 15.5 C30 10.5 33.5 8 37.5 8 C42 8 46 11 46 16.5 C46 27 33 35 27 40 Z"
-                  fill="none" stroke="#D9A441" stroke-width="0.6" opacity=".8" stroke-linejoin="round"></path>
-          </svg>
-        </div>
+        <div class="kh pair">ជាគូនឹង</div>
         <div class="who">
           <span class="kh role">កូនស្រីនាម</span>
           <span class="kh name">{couple.bride.kh}</span>
-          <span class="en caps latin">{couple.bride.en}</span>
         </div>
       </div>
 
+      <p class="kh details-kh">{letter.detailsKh}</p>
+
       <div class="gold-rule"></div>
 
-      <div class="details">
-        <p class="kh details-kh">{letter.detailsKh}</p>
-        <div class="en dots">{date.dots}</div>
-        <p class="en invite-en">{letter.detailsEn}</p>
-        <div class="kh thanks">សូមអរគុណ</div>
+      <!-- English half, as printed on the bottom of the card -->
+      <div class="en caps parents-en">
+        {parentsEn.map((p) => <div>{p}</div>)}
       </div>
+
+      <p class="en caps invite-en">{letter.inviteEn}</p>
+
+      <div class="couple">
+        <div class="who">
+          <span class="en caps role-en">Groom</span>
+          <span class="en caps name-en">{couple.groom.en}</span>
+        </div>
+        <div class="who">
+          <span class="en caps role-en">Bride</span>
+          <span class="en caps name-en">{couple.bride.en}</span>
+        </div>
+      </div>
+
+      <div class="details-en">
+        <div class="en caps held">Which will be held</div>
+        <p class="en when">{letter.detailsEn}</p>
+      </div>
+
+      <div class="kh thanks">សូមអរគុណ</div>
     </div>
   </div>
 </section>
@@ -59,24 +70,30 @@ const { couple, date, parents, letter } = wedding;
                 repeating-linear-gradient(0deg, rgba(142,27,46,0.04) 0 1px, transparent 1px 26px);
   }
   .body {
-    position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center;
-    max-width: 520px; margin: 0 auto; padding: 60px 34px 56px;
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center;
+    max-width: 520px; margin: 0 auto; padding: 60px 8px 56px;
   }
   .heading { font-size: 21px; line-height: 1.7; color: var(--wine-700); text-shadow: 0 0 1px rgba(217, 164, 65, 0.35); }
-  .parents { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; width: 100%; font-size: 12.5px; color: var(--wine-700); line-height: 1.9; }
+  .parents { display: grid; grid-template-columns: auto auto; justify-content: space-between; text-align: left; gap: 4px 18px; width: 100%; padding: 0 18px; font-size: 12.5px; color: var(--wine-700); line-height: 1.9; }
   .honour { font-size: 13px; color: var(--rose); line-height: 1.8; }
-  .invite-kh { font-size: 14px; line-height: 2.1; color: var(--wine-700); text-wrap: pretty; }
-  .invite-en { font-size: 14.5px; line-height: 1.85; letter-spacing: 0.015em; color: var(--rust); }
-  .couple { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; width: 100%; padding-top: 6px; }
-  .who { display: flex; flex-direction: column; gap: 8px; }
+  .invite-kh { padding: 0 4px; font-size: 12.5px; line-height: 2; color: var(--wine-700); text-wrap: pretty; }
+  .couple { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; width: 100%; padding: 4px 18px 0; }
+  .couple > .who:first-child { justify-self: start; }
+  .couple > .who:last-child { justify-self: end; }
+  /* Groom · ជាគូនឹង · bride, with the same gap on each side of ជាគូនឹង. */
+  .couple.kh-row { display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
+  .pair { font-size: 12.5px; color: var(--rose); line-height: 1.6; padding-bottom: 4px; }
+  .who { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .role { font-size: 11px; color: var(--rust); letter-spacing: 0.04em; }
-  .name { font-size: 15px; color: var(--wine-700); line-height: 1.6; }
-  .latin { font-size: 8px; letter-spacing: 0.3em; color: var(--tan); }
-  .heart { display: flex; align-items: center; justify-content: center; }
-  .heart svg { display: block; filter: drop-shadow(0 2px 4px rgba(142, 27, 46, 0.25)); }
+  .name { font-family: 'Khmer OS Muol Light', var(--kh-font); font-size: 14px; color: var(--gold-dk); line-height: 1.9; }
+  .details-kh { padding: 0 18px; font-size: 12.5px; line-height: 2; color: var(--wine-700); text-wrap: pretty; }
   .gold-rule { width: 78%; height: 1px; background: linear-gradient(to right, transparent, rgba(217, 164, 65, 0.85), transparent); }
-  .details { display: flex; flex-direction: column; gap: 12px; }
-  .details-kh { font-size: 13.5px; line-height: 2.1; color: var(--wine-700); }
-  .dots { font-size: 12px; letter-spacing: 0.3em; color: var(--rose); }
+  .parents-en { display: grid; grid-template-columns: auto auto; justify-content: space-between; text-align: left; gap: 4px 18px; width: 100%; padding: 0 18px; font-size: 10.5px; letter-spacing: 0.06em; color: var(--wine-700); line-height: 1.7; }
+  .invite-en { padding: 0 18px; font-size: 10.5px; line-height: 1.8; letter-spacing: 0.08em; color: var(--rust); text-wrap: balance; }
+  .role-en { font-size: 9px; letter-spacing: 0.24em; color: var(--rust); }
+  .name-en { font-size: 11px; letter-spacing: 0.06em; color: var(--wine-700); line-height: 1.5; white-space: nowrap; }
+  .details-en { display: flex; flex-direction: column; gap: 6px; }
+  .held { font-size: 9.5px; letter-spacing: 0.24em; color: var(--rust); }
+  .when { font-size: 14px; line-height: 1.8; color: var(--rose); white-space: pre-line; }
   .thanks { font-size: 12px; color: var(--rose); line-height: 1.8; padding-top: 4px; }
 </style>
