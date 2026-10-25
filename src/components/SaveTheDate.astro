@@ -265,7 +265,8 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
 
   /** Bounces the whole page up a little, hinting that it scrolls. */
   const hintScroll = (page: HTMLElement) => {
-    const nudge = () => page.animate([
+    let current: Animation | undefined;
+    const nudge = () => current = page.animate([
       { transform: 'none' },
       { transform: 'translateY(-28px)', offset: 0.3 },
       { transform: 'none', offset: 0.55 },
@@ -274,8 +275,15 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
     ], { duration: 2800, easing: 'ease-in-out' });
     let timer = 0;
     const first = window.setTimeout(() => { nudge(); timer = window.setInterval(nudge, HINT_EVERY_MS); }, HINT_PAUSE_MS);
-    const stop = () => { window.clearTimeout(first); window.clearInterval(timer); window.removeEventListener('scroll', stop); };
-    window.addEventListener('scroll', stop, { passive: true });
+    // The moment the guest starts scrolling, stop for good, mid-bounce included.
+    const INTENT = ['scroll', 'wheel', 'touchstart', 'keydown'] as const;
+    const stop = () => {
+      window.clearTimeout(first);
+      window.clearInterval(timer);
+      current?.cancel();
+      INTENT.forEach((type) => window.removeEventListener(type, stop));
+    };
+    INTENT.forEach((type) => window.addEventListener(type, stop, { passive: true }));
     if (window.scrollY > 10) stop();
   };
 
