@@ -11,7 +11,7 @@
 .from svg { flex: none; color: var(--rose); }
 .from span { line-height: 1.7; }
 .textarea {
-  font-family: var(--kh-font); font-size: 14px; color: var(--brown); background: var(--cream);
+  font-family: var(--kh-font); font-size: 16px; color: var(--brown); background: var(--cream); /* under 16px, iOS zooms in on focus */
   border: 1px solid rgba(142, 27, 46, 0.25); border-radius: 8px; padding: 11px 12px; outline: none; resize: vertical;
 }
 .textarea:focus { border-color: var(--rose); }
@@ -22,6 +22,8 @@
 }
 .send:hover { background: var(--rose); }
 .send:disabled { opacity: .7; cursor: default; }
+.send[data-sent] { background: var(--gold-dk); border-color: var(--gold); color: var(--cream-lt); opacity: 1; animation: sentPop 500ms cubic-bezier(0.3, 0, 0.2, 1.4); }
+@keyframes sentPop { 0% { transform: scale(.9); } 100% { transform: none; } }
 .sendKh { font-family: var(--kh-font); font-size: 12px; }
 .sendEn { font-family: var(--en-font); font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; }
 
@@ -31,4 +33,48 @@
   border-left: 1px solid var(--gold); border-radius: 0 12px 12px 0; background: var(--cream-lt);
 }
 .wishName { font-family: var(--en-font); font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--wine-600); }
+/* The little sealed envelope that carries a new wish down into the list. */
+.flyer {
+  position: fixed; z-index: 70; width: 72px; height: 50px; pointer-events: none; opacity: 0;
+  border-radius: 4px; border: 1px solid var(--gold);
+  background: linear-gradient(180deg, var(--wine-600), var(--wine-800));
+  box-shadow: 0 8px 18px rgba(60, 10, 20, 0.35), 0 0 14px rgba(217, 164, 65, 0.35);
+}
+.flyerFlap {
+  position: absolute; inset: 0 0 38% 0;
+  background: linear-gradient(180deg, #9A1E33, var(--wine-600));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  filter: drop-shadow(0 1px 0 var(--gold));
+}
+.flyerSeal {
+  position: absolute; left: 50%; top: 62%; width: 15px; height: 15px; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFF1C4, var(--gold) 55%, #8E5E16);
+  box-shadow: 0 0 6px rgba(244, 218, 155, 0.8);
+}
+
+/* A new wish opens at the top of the list, glows gold and throws off a few sparks. */
+.wish { position: relative; }
+.fresh { animation: wishIn 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both, wishGlow 2400ms ease-out both; }
+@keyframes wishIn {
+  from { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; transform: scale(.94); }
+  to { opacity: 1; max-height: 400px; transform: none; }
+}
+@keyframes wishGlow {
+  0%, 20% { box-shadow: 0 0 0 1px rgba(217, 164, 65, 0.7), 0 0 26px rgba(217, 164, 65, 0.55); }
+  100% { box-shadow: 0 0 0 1px rgba(217, 164, 65, 0), 0 0 0 rgba(217, 164, 65, 0); }
+}
+.spark {
+  position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; pointer-events: none;
+  background: var(--gold); box-shadow: 0 0 6px rgba(217, 164, 65, 0.9); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: spark 900ms cubic-bezier(0.2, 0.7, 0.3, 1) 150ms both;
+}
+@keyframes spark {
+  from { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); }
+  to { opacity: 0; transform: rotate(var(--a)) translateY(-110px) scale(1.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fresh, .spark, .send[data-sent] { animation: none; }
+  .spark { display: none; }
+}
 .wishMsg { font-family: var(--kh-font); font-size: 13.5px; font-weight: 300; color: var(--brown); line-height: 1.9; }

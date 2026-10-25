@@ -19,7 +19,7 @@ const rootStyle = [
 <html lang="km" style={rootStyle}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#8E1B2E" />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -39,6 +39,8 @@ const rootStyle = [
       // Every visit starts at the top, behind the cover — don't restore the old scroll position on reload.
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
+      // The page is designed for the phone's width: no pinch-zoom (iOS Safari ignores user-scalable=no).
+      document.addEventListener('gesturestart', (e) => e.preventDefault());
     </script>
   </head>
   <body class={settings.lockUntilOpened ? 'is-locked' : undefined}>
