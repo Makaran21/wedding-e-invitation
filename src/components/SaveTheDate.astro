@@ -9,6 +9,8 @@ import Photo from './Photo.astro';
 const { couple, date, photos, settings } = wedding;
 const dust = makeDust(settings.dustCount);
 const mono = monogramSrc(settings.dateMonogram);
+const khDigits = (v: string) => v.replace(/\d/g, (d) => '០១២៣៤៥៦៧៨៩'[Number(d)]);
+const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
 ---
 <section id="date" class="date">
   <div class="glow"></div>
@@ -29,10 +31,31 @@ const mono = monogramSrc(settings.dateMonogram);
       ? <MonogramImage client:load src={mono.src} className={mono.square ? 'mono-img square' : 'mono-img'} />
       : <div class="mono-type">M<span>&amp;</span>N</div>}
 
-    <div class="triple">
-      <div class="side left"><span class="kh">{date.monthKh}</span></div>
-      <div class="en day">{date.day}</div>
-      <div class="side right"><span class="en">{date.iso.slice(0, 4)}</span></div>
+    <div class="when">
+      <div class="kh month">ខែ{date.monthKh}</div>
+      <div class="triple">
+        <div class="kh side">{weekdayKh}</div>
+        <div class="kh day">{khDigits(date.day)}</div>
+        <div class="kh side">ឆ្នាំ{date.yearKh}</div>
+      </div>
+      <div class="kh lunar">{lunarRest.join(' ')}</div>
+    </div>
+
+    <div class="countdown" data-countdown={date.iso}>
+      <div class="cd-head">
+        <div class="rule-fade-r cd-line"></div>
+        <div class="kh cd-title">រាប់ថយក្រោយ</div>
+        <div class="rule-fade-l cd-line"></div>
+      </div>
+      <div class="cd-row">
+        {([['d', 'ថ្ងៃ'], ['h', 'ម៉ោង'], ['m', 'នាទី'], ['s', 'វិនាទី']] as const).map(([k, kh]) => (
+          <div class="cd-cell">
+            <div class="kh cd-num" data-cd={k}>--</div>
+            <div class="kh cd-kh">{kh}</div>
+          </div>
+        ))}
+      </div>
+      <div class="kh cd-today" hidden>ថ្ងៃនេះជាថ្ងៃមង្គល</div>
     </div>
 
     <GuestCard client:load />
@@ -73,12 +96,30 @@ const mono = monogramSrc(settings.dateMonogram);
   .kick { font-size: 10px; letter-spacing: 0.32em; color: var(--gold); }
 
   .stack :global(.mono-img) { display: block; width: 172px; height: 242px; object-fit: contain; margin-bottom: -6px; }
-  .triple { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; width: 100%; max-width: 330px; }
-  .side { display: flex; flex-direction: column; gap: 5px; }
-  .side .kh, .side .en { font-size: 15px; color: var(--gold-lt); line-height: 1.5; }
-  .left { align-items: flex-end; padding-right: 16px; border-right: 1px solid var(--gold-a35); }
-  .right { align-items: flex-start; padding-left: 16px; border-left: 1px solid var(--gold-a35); }
-  .day { font-size: 62px; font-weight: 500; color: var(--gold-dk); line-height: 0.9; letter-spacing: 0.01em; }
+  .when { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+  .month { font-size: 18px; color: var(--gold-lt); line-height: 1.6; }
+  .triple { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; width: 100%; max-width: 300px; }
+  .side {
+    padding: 6px 0 5px; border-top: 1px solid var(--gold-a55); border-bottom: 1px solid var(--gold-a55);
+    font-size: 14px; color: var(--gold-lt); text-align: center; line-height: 1.7;
+  }
+  .day { font-size: 60px; color: var(--gold-dk); line-height: 1.25; }
+  .lunar { font-size: 12.5px; color: var(--gold-lt); opacity: .8; line-height: 1.8; }
+
+  .countdown { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; margin-top: 6px; }
+  .cd-head { display: flex; align-items: center; gap: 12px; }
+  .cd-line { width: 30px; }
+  .cd-title { font-size: 12px; color: var(--gold); opacity: .9; line-height: 1.7; }
+  .cd-row { display: flex; align-items: flex-start; justify-content: center; }
+  .cd-cell { position: relative; display: flex; flex-direction: column; align-items: center; width: 64px; }
+  .cd-cell + .cd-cell::before {
+    content: ''; position: absolute; left: -2.5px; top: 16px; width: 5px; height: 5px;
+    transform: rotate(45deg); background: var(--gold-a55);
+  }
+  .cd-num { font-size: 24px; color: var(--gold-lt); line-height: 1.5; }
+  .cd-kh { font-size: 11px; color: var(--gold); line-height: 1.6; opacity: .85; }
+  .cd-today { font-size: 14px; color: var(--gold-lt); line-height: 1.8; }
+  .countdown.is-today .cd-row { display: none; }
   .stack :global(.mono-img.square) { width: 108px; height: 108px; margin-bottom: 0; }
   .mono-type { font-family: var(--en-font); font-size: 64px; font-weight: 500; color: var(--gold); line-height: 1; letter-spacing: 0.02em; }
   .mono-type span { display: inline-block; margin: 0 -14px; font-size: 44px; transform: translateY(-6px); opacity: .9; }
@@ -109,3 +150,31 @@ const mono = monogramSrc(settings.dateMonogram);
   .strip-caption div:last-child { font-size: 5.5px; letter-spacing: 0.18em; color: var(--tan); }
   .story-kh { position: relative; font-size: 11px; color: var(--gold-lt); opacity: .8; line-height: 2; }
 </style>
+
+<script>
+  // Live countdown to the wedding; switches to a "today" line once the day arrives.
+  for (const el of document.querySelectorAll<HTMLElement>('[data-countdown]')) {
+    const target = new Date(el.dataset.countdown!).getTime();
+    const cells = Object.fromEntries(
+      Array.from(el.querySelectorAll<HTMLElement>('[data-cd]')).map((c) => [c.dataset.cd!, c]),
+    );
+    const kh = (v: string) => v.replace(/\d/g, (d) => '០១២៣៤៥៦៧៨៩'[Number(d)]);
+    const pad = (n: number) => kh(String(n).padStart(2, '0'));
+    const tick = () => {
+      const ms = target - Date.now();
+      if (ms <= 0) {
+        el.classList.add('is-today');
+        el.querySelector<HTMLElement>('.cd-today')!.hidden = false;
+        clearInterval(timer);
+        return;
+      }
+      const s = Math.floor(ms / 1000);
+      cells.d.textContent = kh(String(Math.floor(s / 86400)));
+      cells.h.textContent = pad(Math.floor(s / 3600) % 24);
+      cells.m.textContent = pad(Math.floor(s / 60) % 60);
+      cells.s.textContent = pad(s % 60);
+    };
+    const timer = setInterval(tick, 1000);
+    tick();
+  }
+</script>

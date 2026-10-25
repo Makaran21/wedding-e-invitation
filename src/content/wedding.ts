@@ -4,7 +4,7 @@
 
 export type ProgramIcon =
   | 'icoTray' | 'icoBlessing' | 'icoMonk' | 'icoScissors'
-  | 'icoRings' | 'icoDine' | 'icoGuests' | 'icoMusic';
+  | 'icoRings' | 'icoDine' | 'icoGuests' | 'icoMusic' | 'icoCheers' | 'icoPray';
 
 export interface Bilingual { kh: string; en: string }
 export interface ProgramItem { time: string; kh: string; en: string; icon: ProgramIcon }
@@ -98,9 +98,9 @@ export const wedding: WeddingContent = {
     { time: '០៨:០០ ព្រឹក', kh: 'ពិធីចៅមហានិយាយជើងការ រៀបរាប់ផ្លែឈើ និងបំពាក់ចិញ្ចៀន', en: 'Matchmaker rite & exchange of rings', icon: 'icoRings' },
     { time: '០៨:៣០ ព្រឹក', kh: 'ពិធីសូត្រមន្ត ចម្រើនព្រះបរិត្ត', en: "Monks' blessing", icon: 'icoMonk' },
     { time: '០៩:៣០ ព្រឹក', kh: 'ពិធីកាត់សក់បង្កក់សិរី កូនប្រុស–កូនស្រី', en: 'Hair cutting', icon: 'icoScissors' },
-    { time: '១១:០០ ព្រឹក', kh: 'ពិធីសំពះផ្ទឹមសែនចងដៃ បង្វិលពពិល និងព្រះថោងតោងស្បៃ', en: 'Knot-tying & passing of blessings', icon: 'icoBlessing' },
+    { time: '១១:០០ ព្រឹក', kh: 'ពិធីសំពះផ្ទឹមសែនចងដៃ បង្វិលពពិល និងព្រះថោងតោងស្បៃ', en: 'Knot-tying & passing of blessings', icon: 'icoPray' },
     { time: '១២:០០ ថ្ងៃត្រង់', kh: 'អញ្ជើញភ្ញៀវកិត្តិយស ពិសារអាហារពេលថ្ងៃត្រង់ បញ្ចប់កិច្ចអាពាហ៍ពិពាហ៍', en: 'Luncheon & close of ceremony', icon: 'icoDine' },
-    { time: '០៥:០០ ល្ងាច', kh: 'អញ្ជើញភ្ញៀវកិត្តិយស ពិសារភោជនាហារពេលល្ងាច', en: 'Evening reception', icon: 'icoMusic' },
+    { time: '០៥:០០ ល្ងាច', kh: 'អញ្ជើញភ្ញៀវកិត្តិយស ពិសារភោជនាហារពេលល្ងាច', en: 'Evening reception', icon: 'icoCheers' },
   ],
 
   venue: {
