@@ -53,7 +53,7 @@ const ITEMS = [
       </>
     )}
   </nav>
-  {/* While Save the Date is on screen, before the dock comes out, the music switch sits top right. */}
+  {/* While Save the Date builds (before the page unlocks), the music switch sits top right. */}
   {hasMusic && (
     <button type="button" class="corner-sound" data-corner-sound data-icon="on" aria-label="Mute music">
       <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" set:html={SOUND_ICONS.on} />
@@ -456,14 +456,17 @@ const ITEMS = [
       // A press on the dock's switch isn't the start of a slide through the sections.
       sound?.addEventListener('pointerdown', (e) => e.stopPropagation());
     }
-    // The top-right switch shows while Save the Date is on screen, once the invitation is open.
-    const date = document.getElementById('date');
-    if (corner && date) {
-      let dateInView = true;
-      let isOpen = false;
-      const place = () => corner.toggleAttribute('data-show', isOpen && dateInView);
-      new IntersectionObserver(([e]) => { dateInView = e.isIntersecting; place(); }, { threshold: 0.35 }).observe(date);
-      onOpened(() => { isOpen = true; place(); });
+    // The top-right switch shows only while Save the Date builds, until the page unlocks.
+    if (corner) {
+      onOpened(() => {
+        corner.setAttribute('data-show', '');
+        const unlocked = new MutationObserver(() => {
+          if (document.body.classList.contains('is-locked')) return;
+          corner.removeAttribute('data-show');
+          unlocked.disconnect();
+        });
+        unlocked.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      });
     }
   }
 </script>
