@@ -1,0 +1,103 @@
+---
+/**
+ * Compact dock at the bottom of the screen: one small icon per section, the one in view in gold.
+ * Appears once the invitation is open, slips away while scrolling down and comes
+ * back on the way up. PUBLIC_NAVBAR=false in .env turns it off (read at build time).
+ */
+const enabled = import.meta.env.PUBLIC_NAVBAR !== 'false';
+
+const ITEMS = [
+  { id: 'date', kh: 'ថ្ងៃ', en: 'Date', icon: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>' },
+  { id: 'letter', kh: 'លិខិត', en: 'Letter', icon: '<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="m3.5 7.5 8.5 6 8.5-6"/>' },
+  { id: 'gallery', kh: 'រូបភាព', en: 'Photos', icon: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="m21 15.5-5-5-9 8.5"/>' },
+  { id: 'program', kh: 'កម្មវិធី', en: 'Program', icon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>' },
+  { id: 'venue', kh: 'ទីតាំង', en: 'Map', icon: '<path d="M12 21s-6.5-5.7-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/>' },
+  { id: 'wishes', kh: 'ជូនពរ', en: 'Wishes', icon: '<path d="M12 20s-7.5-4.6-7.5-10.3A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>' },
+];
+---
+{enabled && (
+  <nav class="dock" aria-label="Sections" data-dock>
+    {ITEMS.map((it) => (
+      <a href={`#${it.id}`} class="item" data-target={it.id} aria-label={`${it.kh} · ${it.en}`}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" set:html={it.icon} />
+      </a>
+    ))}
+  </nav>
+)}
+
+<style>
+  .dock {
+    position: fixed; z-index: 50; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 1px; padding: 3px;
+    border-radius: 999px; border: 1px solid rgba(217, 164, 65, 0.45);
+    background: rgba(44, 5, 16, 0.78);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
+    box-shadow: 0 10px 28px rgba(20, 2, 6, 0.45), inset 0 1px 0 rgba(244, 218, 155, 0.12);
+    transform: translate(-50%, calc(100% + 30px)); opacity: 0; pointer-events: none;
+    transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 300ms ease;
+  }
+  .dock[data-show] { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .dock[data-show][data-away] { transform: translate(-50%, calc(100% + 30px)); opacity: 0; pointer-events: none; }
+
+  .item {
+    display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+    color: var(--gold-pale); -webkit-tap-highlight-color: transparent;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+  .item svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
+  .item[aria-current] { color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold)); }
+  .item[aria-current] svg { opacity: 1; }
+  .item:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dock, .item { transition: none; }
+  }
+</style>
+
+<script>
+  import { onOpened } from '@/lib/events';
+
+  /** Save the Date has finished building by then; the dock follows. */
+  const SHOW_AFTER_MS = 4200;
+
+  const dock = document.querySelector<HTMLElement>('[data-dock]');
+  if (dock) {
+    const items = Array.from(dock.querySelectorAll<HTMLAnchorElement>('[data-target]'));
+    const sections = items
+      .map((a) => document.getElementById(a.dataset.target!))
+      .filter((el): el is HTMLElement => el !== null);
+
+    // Highlight the section crossing the middle of the screen.
+    const mark = (id: string) => items.forEach((a) => a.toggleAttribute('aria-current', a.dataset.target === id));
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) mark(e.target.id);
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    sections.forEach((s) => io.observe(s));
+
+    // Smooth scroll, without adding #hash entries to the history. The dock stays put meanwhile.
+    let steeringUntil = 0;
+    for (const a of items) {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        steeringUntil = Date.now() + 1500;
+        dock.removeAttribute('data-away');
+        document.getElementById(a.dataset.target!)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        mark(a.dataset.target!);
+      });
+    }
+
+    // Away while scrolling down, back on the way up or near the end of the page.
+    let lastY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      const nearEnd = y + window.innerHeight > document.documentElement.scrollHeight - 80;
+      if (Date.now() < steeringUntil) { lastY = y; return; }
+      if (Math.abs(y - lastY) > 8) {
+        dock.toggleAttribute('data-away', y > lastY && y > 200 && !nearEnd);
+        lastY = y;
+      }
+    }, { passive: true });
+
+    onOpened(() => setTimeout(() => dock.setAttribute('data-show', ''), SHOW_AFTER_MS));
+  }
+</script>

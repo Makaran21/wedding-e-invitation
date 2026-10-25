@@ -2,6 +2,7 @@
 import '@/styles/global.css';
 import SvgSprite from '@/components/SvgSprite.astro';
 import Rails from '@/components/Rails.astro';
+import Navbar from '@/components/Navbar.astro';
 import { wedding } from '@/content/wedding';
 import { googleFontsHref } from '@/lib/fonts';
 
@@ -48,6 +49,8 @@ const rootStyle = [
       <slot />
       <Rails />
     </div>
+    <!-- Outside .page: the scroll hint moves .page, and a fixed element inside it would move too. -->
+    <Navbar />
     <script>
       import { setupReveal } from '@/scripts/reveal';
       import { onOpened } from '@/lib/events';
