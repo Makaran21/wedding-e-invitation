@@ -53,7 +53,6 @@ export interface WeddingContent {
   venue: { lat: number; lng: number; zoom: number; details: VenueDetail[] };
   gratitude: Bilingual;
   photos: { strip: [string, string, string]; couple: string; gallery: GalleryPhoto[] };
-  wishes: Wish[];
   settings: Settings;
 }
 
@@ -142,13 +141,6 @@ export const wedding: WeddingContent = {
       { src: '/assets/photos/gallery-9.jpg', label: 'Photo 9 · tall', shape: 'tall' },
     ],
   },
-
-  // Sample wishes from the design — replace or empty this list before sharing.
-  wishes: [
-    { name: 'Guest name', message: 'សូមជូនពរឱ្យគូស្វាមីភរិយាមានសុភមង្គលរាប់អានគ្នាជារៀងរហូត · Wishing you a lifetime of happiness together.' },
-    { name: 'Guest name', message: 'អបអរសាទរ! សូមឱ្យសេចក្ដីស្រឡាញ់នេះនៅស្ថិតស្ថេរ · Congratulations to you both.' },
-    { name: 'Guest name', message: 'សូមជូនពរជោគជ័យ និងសុខភាពល្អ · Health, joy and blessings always.' },
-  ],
 
   // Same knobs as the Claude Design properties panel.
   settings: {

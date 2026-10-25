@@ -1,0 +1,39 @@
+---
+import '@/styles/global.css';
+import AdminPanel from '@/components/admin/AdminPanel';
+import { wedding } from '@/content/wedding';
+import { googleFontsHref } from '@/lib/fonts';
+import { hasSession, isAdminKey } from '@/server/http';
+import { startTelegram } from '@/server/telegram';
+
+export const prerender = false;
+
+// The admin panel lives at /<ADMIN_KEY>, a path nobody can guess; any other path gets a plain 404.
+const key = Astro.params.key ?? '';
+if (!isAdminKey(key)) return new Response('Not found', { status: 404 });
+startTelegram();
+
+const { couple, settings } = wedding;
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+Astro.response.headers.set('referrer-policy', 'no-referrer');
+---
+<!doctype html>
+<html lang="en" style={`--kh-font:'${settings.khmerFont}', sans-serif;--en-font:'${settings.latinFont}', serif`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#58101F" />
+    <title>Wishes admin · {couple.short}</title>
+    <link rel="icon" href="/assets/monogram-khmer-gold.png" />
+    <link rel="stylesheet" href={googleFontsHref(settings.khmerFont, settings.latinFont)} />
+    <style is:global>
+      body { background: var(--cream); color: var(--brown); font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    </style>
+  </head>
+  <body>
+    <AdminPanel client:load adminKey={key} couple={couple.short} signedIn={hasSession(Astro)} />
+  </body>
+</html>

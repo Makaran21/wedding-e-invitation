@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { getGuestName } from '@/lib/guest';
+import { loadGuest } from '@/lib/guest';
 import { onOpened } from '@/lib/events';
 import { wedding } from '@/content/wedding';
 import s from './GuestCard.module.css';
@@ -10,7 +10,7 @@ export default function GuestCard() {
   const [shine, setShine] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setName(getGuestName()); }, []);
+  useEffect(() => { loadGuest().then((g) => setName(g.name)); }, []);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { wedding } from '@/content/wedding';
 import { markOpened } from '@/lib/events';
-import { getGuestName } from '@/lib/guest';
+import { loadGuest } from '@/lib/guest';
 import { showProgress } from '@/lib/progress';
 import { monogramSrc } from '@/lib/monogram';
 import MonogramImage from './MonogramImage';
@@ -90,7 +90,7 @@ export default function Cover() {
   const mono = monogramSrc(settings.monogram);
 
   useEffect(() => {
-    setGuest(getGuestName());
+    loadGuest().then((g) => setGuest(g.name));
     showProgress(INTRO_MS);
   }, []);
   useGoldDust(dust, mounted && stage === 'idle');

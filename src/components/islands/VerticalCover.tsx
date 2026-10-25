@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { wedding } from '@/content/wedding';
 import { markOpened } from '@/lib/events';
-import { getGuestName } from '@/lib/guest';
+import { loadGuest } from '@/lib/guest';
 import { monogramSrc } from '@/lib/monogram';
 import MonogramImage from './MonogramImage';
 import s from './VerticalCover.module.css';
@@ -86,7 +86,7 @@ export default function VerticalCover() {
   const monoRef = useRef<HTMLDivElement>(null);
   const mono = monogramSrc(settings.monogram);
 
-  useEffect(() => { setGuest(getGuestName()); }, []);
+  useEffect(() => { loadGuest().then((g) => setGuest(g.name)); }, []);
   useGoldDust(dust, mounted && stage === 'idle');
 
   useEffect(() => {

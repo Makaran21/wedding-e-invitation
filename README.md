@@ -8,10 +8,26 @@ Astro + React + TypeScript site built from the Claude Design file
 
 ```sh
 npm install
-npm run dev       # http://localhost:4321
-npm run build     # type-check + build to dist/
-npm run preview   # serve the built site
+cp .env.example .env   # then fill it in (see below)
+npm run dev            # http://localhost:4321
+npm run build          # type-check + build to dist/
+npm start              # run the built site: pages, wishes API and admin panel (reads .env)
 ```
+
+The pages are prerendered, but the wishes and the admin panel need the small Node server that
+`npm start` runs (Node 22.13+, which has SQLite built in). Wishes are kept in `data/wishes.db`.
+Set `PORT` and `HOST` to change where it listens, e.g. `HOST=0.0.0.0 PORT=4321 npm start`.
+
+### Settings (`.env`)
+
+| Variable | What it does |
+| --- | --- |
+| `ADMIN_KEY` | The admin panel's address: `https://your-site/<ADMIN_KEY>`. Long and random, so nobody can guess it. |
+| `ADMIN_PASSWORD` | Asked on the admin panel. 10 wrong tries locks that IP out for 15 minutes. |
+| `TRUST_PROXY` | `true` behind Cloudflare (tunnel or proxy) or another reverse proxy, so the guest's real IP is used. |
+| `DB_PATH` | Where the database lives (default `data/wishes.db`). |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Optional: post each wish to a Telegram group with Approve / Reject buttons. |
+| `PUBLIC_ANIMATION_PROGRESS` | `false` hides the gold progress line along the bottom during animations (needs a rebuild). |
 
 ## Change the content
 
@@ -22,14 +38,16 @@ placeholder from the design.
 
 ## Personalised links
 
-Add `?to=` with the guest's name to the link:
+Make them in the admin panel (**Guest links**): paste names, one per line, and each guest gets a
+link with a random token:
 
 ```
-https://your-site.com/?to=លោក%20សុខ%20សាន្ត
+https://your-site.com/?g=y8o2_md36wFi
 ```
 
-The name appears on the save-the-date card and as the sender in the wishes form. Without it, the
-page uses `guestDefault` from the content file.
+The name shows on the cover and the save-the-date card, and is locked in as the sender of their
+wish. The older `?to=<name>` links still work for the name, but those guests send as public guests.
+Without either, the page uses `guestDefault` from the content file.
 
 ## Photos
 
@@ -48,11 +66,34 @@ fetched. Download them from the design project and put them in `public/assets/`:
 
 ## Wishes guestbook
 
-The form and list are built. For now, wishes are kept in memory only: a guest sees their own wish
-until they reload, and other guests never see it. To collect wishes for real, implement the
-`WishesStore` interface in `src/lib/wishes.ts` (for example with Supabase, Firebase, or a Google
-Apps Script endpoint) and export it as `wishesStore`. The UI doesn't need to change. Remove or
-replace the sample wishes in `wedding.ts` before sharing the site.
+- Guests with a personal link send as the name on it; everyone else types their name.
+- **One wish per guest**: per personal link, or per IP for guests without one. Sending is limited
+  to 5 tries per IP every 10 minutes.
+- Wishes show on the site only once **approved**. Until then the guest sees theirs as pending.
+- Guests can **edit** their wish. While pending, the text is just replaced. Once approved, the
+  approved text keeps showing and the change waits for approval. A rejected wish can be edited and
+  sent again.
+- When you reject a wish or a change, you can give a **reason**, which the guest sees.
+
+### Admin panel
+
+Open `https://your-site/<ADMIN_KEY>` and sign in with `ADMIN_PASSWORD`. On phone or desktop:
+
+- **Wishes**: Pending (new wishes and changes waiting), Approved, Rejected, All. Approve, reject
+  (with a reason), put back to pending, or delete.
+- **Guest links**: create links (many at once), copy or share them, rename, delete, and see who has
+  sent a wish.
+
+### Telegram
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and put its token in `TELEGRAM_BOT_TOKEN`.
+2. Add the bot to your group and send any message there.
+3. Open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy the group's `chat.id`
+   (a negative number) into `TELEGRAM_CHAT_ID`. Then restart the server.
+
+Each new wish, and each change to an approved wish, is posted to the group with **Approve** and
+**Reject** buttons. After rejecting, **reply to the post** with a reason and the guest sees it.
+Decisions made in the admin panel update the post too. Only buttons in that group count.
 
 ## Structure
 
@@ -62,7 +103,11 @@ src/pages/index.astro         section order
 src/components/*.astro        static sections (no JavaScript shipped)
 src/components/islands/*.tsx  interactive React pieces: cover, petals, guest card,
                               program toggle, venue map, wishes
-src/lib/                      guest name, particle math, fonts, monogram, wishes store
+src/components/admin/         the admin panel
+src/pages/api/                wishes API (public) and admin API
+src/pages/[key].astro         the admin page, at the secret ADMIN_KEY path
+src/server/                   SQLite database, request helpers, Telegram bot
+src/lib/                      guest lookup, particle math, fonts, monogram, wishes API client
 src/scripts/reveal.ts         scroll-in reveal and parallax
 design-src/                   original Claude Design source, kept for reference
 ```

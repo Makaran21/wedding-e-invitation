@@ -14,7 +14,48 @@
   font-family: var(--kh-font); font-size: 16px; color: var(--brown); background: var(--cream); /* under 16px, iOS zooms in on focus */
   border: 1px solid rgba(142, 27, 46, 0.25); border-radius: 8px; padding: 11px 12px; outline: none; resize: vertical;
 }
-.textarea:focus { border-color: var(--rose); }
+.textarea:focus, .input:focus { border-color: var(--rose); }
+.input {
+  font-family: var(--kh-font); font-size: 16px; line-height: 1.6; color: var(--brown); background: var(--cream);
+  border: 1px solid rgba(142, 27, 46, 0.25); border-radius: 8px; padding: 9px 12px; outline: none; width: 100%; box-sizing: border-box;
+}
+.note, .fault, .ownNote, .empty { margin: 0; font-family: var(--kh-font); font-size: 12.5px; line-height: 1.8; }
+.note { color: var(--brown); padding: 8px 12px; border-radius: 8px; background: rgba(217, 164, 65, 0.12); }
+.fault { color: var(--wine-600); padding: 8px 12px; border-radius: 8px; background: rgba(142, 27, 46, 0.07); }
+.empty { text-align: center; color: var(--rose); opacity: .8; }
+
+/* The guest's own wish, in place of the form once sent. */
+.own {
+  position: relative; display: flex; flex-direction: column; gap: 8px; padding: 20px 22px;
+  border: 1px solid rgba(217, 164, 65, 0.55); border-radius: 16px; background: var(--cream-lt);
+}
+.ownHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.badge {
+  font-family: var(--kh-font); font-size: 11px; line-height: 1.6; padding: 2px 10px; border-radius: 999px;
+  color: var(--gold-dk); background: rgba(217, 164, 65, 0.14); border: 1px solid rgba(217, 164, 65, 0.4);
+}
+.badge[data-status='approved'] { color: #2F6B3A; background: rgba(47, 107, 58, 0.08); border-color: rgba(47, 107, 58, 0.3); }
+.ownNote { color: var(--rose); }
+.badge[data-status='rejected'] { color: #9A2F3B; background: rgba(176, 67, 79, 0.08); border-color: rgba(176, 67, 79, 0.3); }
+.pendingEdit {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px;
+  border: 1px dashed rgba(217, 164, 65, 0.7); background: rgba(217, 164, 65, 0.07);
+}
+.reason {
+  margin: 0; padding: 10px 12px; border-radius: 10px; font-family: var(--kh-font); font-size: 12.5px; line-height: 1.8;
+  color: #7E2632; background: rgba(176, 67, 79, 0.07); border-left: 3px solid rgba(176, 67, 79, 0.5);
+}
+.editBtn {
+  align-self: flex-start; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid rgba(142, 27, 46, 0.3); background: transparent; color: var(--wine-600);
+  font-family: var(--kh-font); font-size: 12.5px;
+}
+.editActions { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.editActions .send { margin-top: 0; align-self: auto; }
+.cancel {
+  padding: 10px 18px; border-radius: 999px; cursor: pointer; border: 1px solid rgba(142, 27, 46, 0.25);
+  background: transparent; color: var(--brown); font-family: var(--kh-font); font-size: 12px;
+}
 .send {
   margin-top: 4px; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 12px 28px; border-radius: 999px; border: 1px solid var(--wine-600); background: var(--wine-600);
@@ -22,8 +63,7 @@
 }
 .send:hover { background: var(--rose); }
 .send:disabled { opacity: .7; cursor: default; }
-.send[data-sent] { background: var(--gold-dk); border-color: var(--gold); color: var(--cream-lt); opacity: 1; animation: sentPop 500ms cubic-bezier(0.3, 0, 0.2, 1.4); }
-@keyframes sentPop { 0% { transform: scale(.9); } 100% { transform: none; } }
+
 .sendKh { font-family: var(--kh-font); font-size: 12px; }
 .sendEn { font-family: var(--en-font); font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; }
 
@@ -52,7 +92,7 @@
   box-shadow: 0 0 6px rgba(244, 218, 155, 0.8);
 }
 
-/* A new wish opens at the top of the list, glows gold and throws off a few sparks. */
+/* The guest's wish opens in place of the form, glows gold and throws off a few sparks. */
 .wish { position: relative; }
 .fresh { animation: wishIn 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both, wishGlow 2400ms ease-out both; }
 @keyframes wishIn {
@@ -74,7 +114,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fresh, .spark, .send[data-sent] { animation: none; }
+  .fresh, .spark { animation: none; }
   .spark { display: none; }
 }
 .wishMsg { font-family: var(--kh-font); font-size: 13.5px; font-weight: 300; color: var(--brown); line-height: 1.9; }
