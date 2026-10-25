@@ -36,6 +36,7 @@ const ITEMS = [
 ];
 ---
 {enabled && (
+  <>
   <nav class="dock" aria-label="Sections" data-dock data-pos={position}>
     {ITEMS.map((it) => (
       <a href={`#${it.id}`} class="item" style={`--i:${ITEMS.indexOf(it)}`} data-target={it.id} data-title-kh={TITLES[it.id].kh} data-title-en={TITLES[it.id].en} aria-label={`${it.kh} · ${it.en}`}>
@@ -52,6 +53,12 @@ const ITEMS = [
       </>
     )}
   </nav>
+  {/* While Save the Date is on screen, before the dock comes out, the music switch sits top right. */}
+  {hasMusic && (
+    <button type="button" class="corner-sound" data-corner-sound data-icon="on" aria-label="Mute music">
+      <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" set:html={SOUND_ICONS.on} />
+    </button>
+  )}
   <div class="veil" data-veil aria-hidden="true">
     <div class="veil-inner">
       <!-- The section's heading, as on the page: its icon between the gold rules, Khmer title, English line. -->
@@ -66,6 +73,7 @@ const ITEMS = [
       </div>
     </div>
   </div>
+  </>
 )}
 
 <style>
@@ -116,6 +124,22 @@ const ITEMS = [
   .item svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
   .item[aria-current] { color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold)); }
   .item[aria-current] svg { opacity: 1; }
+
+  .corner-sound {
+    position: fixed; z-index: 56; top: calc(14px + env(safe-area-inset-top, 0px));
+    right: calc(max(0px, (100vw - var(--page-max)) / 2) + var(--rail) + 8px);
+    display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border-radius: 50%; cursor: pointer;
+    color: var(--gold-lt); border: 1px solid rgba(217, 164, 65, 0.55); background: rgba(44, 5, 16, 0.45);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 4px 14px rgba(20, 2, 6, 0.35);
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0; transform: scale(.6); pointer-events: none; transition: opacity 300ms ease, transform 300ms ease;
+  }
+  .corner-sound[data-show] { opacity: 1; transform: none; pointer-events: auto; }
+  .corner-sound svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+  .corner-sound[data-icon='off'] svg { opacity: .6; }
+  .corner-sound :global(.bar) { transform-box: fill-box; transform-origin: bottom; animation: dance 900ms ease-in-out infinite alternate; }
+  .corner-sound :global(.b2) { animation-duration: 700ms; animation-delay: -300ms; }
+  .corner-sound :global(.b3) { animation-duration: 1100ms; animation-delay: -600ms; }
 
   /* The music switch and its divider. */
   .sep { flex: none; width: 14px; height: 1px; margin: 3px auto; background: var(--gold-a55); transform: scale(0); transition: transform 160ms ease-in; }
@@ -412,21 +436,35 @@ const ITEMS = [
     }, { passive: true });
     onOpened(() => { opened = true; });
 
-    // The music switch: shows only when there's music; its icon follows the music's state.
+    // The music switches (in the dock, and top right during Save the Date): shown only when there's
+    // music; their icon follows the music's state.
     const sound = dock.querySelector<HTMLButtonElement>('[data-sound]');
-    if (sound) {
-      const svg = sound.querySelector('svg')!;
-      const sep = dock.querySelector<HTMLElement>('.sep');
+    const corner = document.querySelector<HTMLButtonElement>('[data-corner-sound]');
+    const sep = dock.querySelector<HTMLElement>('.sep');
+    const switches = [sound, corner].filter((b): b is HTMLButtonElement => b !== null);
+    if (switches.length) {
       music.subscribe((st) => {
-        sound.hidden = !st.available;
+        if (sound) sound.hidden = !st.available;
         if (sep) sep.hidden = !st.available;
+        if (corner) corner.hidden = !st.available;
         const icon = st.muted ? 'off' : st.playing ? 'playing' : 'on';
-        if (sound.dataset.icon !== icon) { sound.dataset.icon = icon; svg.innerHTML = SOUND_ICONS[icon]; }
-        sound.setAttribute('aria-label', st.muted ? 'Turn music on' : 'Mute music');
+        for (const b of switches) {
+          if (b.dataset.icon !== icon) { b.dataset.icon = icon; b.querySelector('svg')!.innerHTML = SOUND_ICONS[icon]; }
+          b.setAttribute('aria-label', st.muted ? 'Turn music on' : 'Mute music');
+        }
       });
-      sound.addEventListener('click', () => music.toggle());
-      // A press on the switch isn't the start of a slide through the sections.
-      sound.addEventListener('pointerdown', (e) => e.stopPropagation());
+      for (const b of switches) b.addEventListener('click', () => music.toggle());
+      // A press on the dock's switch isn't the start of a slide through the sections.
+      sound?.addEventListener('pointerdown', (e) => e.stopPropagation());
+    }
+    // The top-right switch shows while Save the Date is on screen, once the invitation is open.
+    const date = document.getElementById('date');
+    if (corner && date) {
+      let dateInView = true;
+      let isOpen = false;
+      const place = () => corner.toggleAttribute('data-show', isOpen && dateInView);
+      new IntersectionObserver(([e]) => { dateInView = e.isIntersecting; place(); }, { threshold: 0.35 }).observe(date);
+      onOpened(() => { isOpen = true; place(); });
     }
   }
 </script>

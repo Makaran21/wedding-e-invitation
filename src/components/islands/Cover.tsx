@@ -187,8 +187,13 @@ export default function Cover() {
               <div className={s.cardLine} />
               <div className={s.cardNames}>{couple.groom.kh} <span>និង</span> {couple.bride.kh}</div>
               <div className={s.cardDate}>{wedding.date.fullKh}</div>
-              {/* The invitation's wording as fine print: texture, like a printed card, not for reading here. */}
-              <p className={s.cardFine} aria-hidden="true">{wedding.letter.inviteKh} {wedding.letter.detailsKh}</p>
+              {/* A short poem as fine print: texture, like a printed card, not for reading here. */}
+              <p className={s.cardFine} aria-hidden="true">
+                ស្នេហាពីរចិត្ត រួមផ្សំជាមួយ<br />
+                ដូចផ្កាពីរទង រីកក្នុងសួនតែមួយ<br />
+                សូមសុភមង្គល ស្ថិតស្ថេរគង់វង្ស<br />
+                ពីថ្ងៃនេះទៅ ជារៀងរហូត
+              </p>
               <div className={s.cardLine} />
               <div className={s.cardText}>សូមស្វាគមន៍</div>
             </div>
