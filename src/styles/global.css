@@ -49,8 +49,6 @@ body {
 }
 
 body.is-locked { overflow: hidden; }
-/* No double-tap zoom; the map sets its own touch handling. */
-html { touch-action: manipulation; }
 
 /* Phones: the invitation fills the screen, so Safari's status bar, home-indicator
    and overscroll areas should look like the invitation, not the dark desktop backdrop. */
