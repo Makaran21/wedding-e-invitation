@@ -72,7 +72,8 @@ const ITEMS = [
 
   /* The veil for long jumps: wine with a whisper of damask, the section's name in gold. */
   .veil {
-    position: fixed; inset: 0; z-index: 45; display: none; place-items: center; pointer-events: none;
+    /* Over the kbach rails (54) too; under the dock (56). */
+    position: fixed; inset: 0; z-index: 55; display: none; place-items: center; pointer-events: none;
     background: radial-gradient(90% 70% at 50% 50%, #7A1A2C, var(--wine-900) 60%, var(--wine-950));
   }
   .veil::before {
