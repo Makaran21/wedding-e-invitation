@@ -1,12 +1,14 @@
 ---
 /**
- * Compact dock at the bottom of the screen: one small icon per section, the one in view in gold.
- * A jump to a section more than two away goes through a veil: it blooms out of the tapped icon, a
- * title card names the section, then it opens on the section in a circle growing from the same icon
- * while the page glides the last stretch into place. Shorter jumps just scroll. Sliding a finger along the dock scrubs through the
- * sections: the page follows straight away, with no veil. Appears once the invitation is open, slips away while scrolling down and comes
- * back on the way up. PUBLIC_NAVBAR=false in .env turns it off, and PUBLIC_NAVBAR_POSITION puts it
- * on the right edge (default) or along the bottom (both read at build time).
+ * Compact dock of section icons, the one in view in gold, on the right edge (default) or along the
+ * bottom. Appears once the invitation is open, slips away while scrolling down and comes back on the
+ * way up.
+ * - Tap: nearby sections scroll into view. One more than two away goes through a veil: it blooms
+ *   out of the icon, a title card names the section, then it opens in a circle from the same icon
+ *   while the page glides the last stretch into place.
+ * - Slide a finger along it to pick a section; the page waits, and letting go goes there like a tap.
+ * PUBLIC_NAVBAR=false in .env turns it off; PUBLIC_NAVBAR_POSITION=right|bottom places it (both
+ * read at build time).
  */
 const enabled = import.meta.env.PUBLIC_NAVBAR !== 'false';
 const position = import.meta.env.PUBLIC_NAVBAR_POSITION === 'bottom' ? 'bottom' : 'right';
@@ -99,7 +101,14 @@ const ITEMS = [
   /* Sliding: the finger owns the dock (no page scroll), and the icon under it swells. */
   .dock { touch-action: none; }
   .dock[data-show][data-sliding] .item { transition: background-color 120ms ease, color 120ms ease, transform 160ms ease; }
-  .dock[data-show][data-sliding] .item[aria-current] { transform: scale(1.28); box-shadow: 0 0 14px rgba(244, 218, 155, 0.6); }
+  /* While sliding, the icon under the finger is the gold one; the current section's steps back. */
+  .dock[data-show][data-sliding] .item[aria-current]:not([data-under]) { color: var(--gold-pale); background: transparent; }
+  .dock[data-show][data-sliding] .item[aria-current]:not([data-under]) svg { opacity: .75; }
+  .dock[data-show][data-sliding] .item[data-under] {
+    transform: scale(1.28); color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold));
+    box-shadow: 0 0 14px rgba(244, 218, 155, 0.55);
+  }
+  .dock[data-show][data-sliding] .item[data-under] svg { opacity: 1; }
   .item:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 2px; }
 
   /* The veil for long jumps: wine with a whisper of damask, the section's name in gold. */
@@ -181,10 +190,8 @@ const ITEMS = [
     // the screen); the next real scroll takes over again.
     const settleSoon = (ms: number) => {
       clearTimeout(quiet);
-      quiet = window.setTimeout(() => { if (!sliding) steering = false; }, ms);
+      quiet = window.setTimeout(() => { steering = false; }, ms);
     };
-    /** True while a finger is sliding along the dock. */
-    let sliding = false;
 
     const io = new IntersectionObserver((entries) => {
       if (steering) return;
@@ -210,22 +217,22 @@ const ITEMS = [
         veilMedal!.animate([
           { transform: 'scale(.6) rotate(-30deg)', opacity: 0 },
           { transform: 'none', opacity: 1 },
-        ], { duration: 420, easing: ease, fill: 'both' }),
+        ], { duration: 220, easing: ease, fill: 'both' }),
         veilName!.animate([
           { opacity: 0, transform: 'translateY(8px)' },
           { opacity: 1, transform: 'none' },
-        ], { duration: 460, delay: 80, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'both' }),
+        ], { duration: 240, delay: 40, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'both' }),
         veilEn!.animate([
           { opacity: 0, letterSpacing: '0.9em' },
           { opacity: 0.85, letterSpacing: '0.42em' },
-        ], { duration: 420, delay: 140, easing: ease, fill: 'both' }),
+        ], { duration: 240, delay: 60, easing: ease, fill: 'both' }),
         ...Array.from(lines, (l) => l.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
-          duration: 380, delay: 140, easing: ease, fill: 'both',
+          duration: 220, delay: 60, easing: ease, fill: 'both',
         })),
       ];
       // A white glint runs through the name once it has risen.
       veilName!.animate([{ backgroundPosition: '200% 0, 0 0' }, { backgroundPosition: '-100% 0, 0 0' }], {
-        duration: 600, delay: 300, easing: 'ease-in-out',
+        duration: 350, delay: 140, easing: 'ease-in-out',
       });
       return Promise.all(steps.map((s) => s.finished));
     };
@@ -259,7 +266,7 @@ const ITEMS = [
       veilIcon.innerHTML = a.querySelector('svg')?.innerHTML ?? '';
       veil.setAttribute('data-on', '');
       await veil.animate([{ clipPath: `circle(0% at ${x}px ${y}px)` }, { clipPath: `circle(150% at ${x}px ${y}px)` }], {
-        duration: 420, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
+        duration: 240, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
       }).finished;
       const inner = veil.querySelector<HTMLElement>('.veil-inner')!;
       await playCard(inner);
@@ -268,7 +275,7 @@ const ITEMS = [
       const down = end > window.scrollY;
       const landing = Math.max(0, end + (down ? -GLIDE_PX : GLIDE_PX));
       window.scrollTo({ top: landing, behavior: 'instant' });
-      await new Promise((done) => setTimeout(done, 90));
+      await new Promise((done) => setTimeout(done, 20));
       // Open on the section: a circle grows from the same icon while the page glides in.
       const reach = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
       veil.style.setProperty('--hx', `${x}px`);
@@ -277,9 +284,9 @@ const ITEMS = [
       inner.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.94)' }], { duration: 180, easing: 'ease-in', fill: 'forwards' });
       await Promise.all([
         veil.animate([{ '--hole': '0px' }, { '--hole': `${reach}px` }], {
-          duration: 520, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
+          duration: 320, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
         }).finished,
-        glide(landing, end, 700),
+        glide(landing, end, 400),
       ]);
       veil.removeAttribute('data-on');
       veil.removeAttribute('data-opening');
@@ -289,21 +296,18 @@ const ITEMS = [
       settleSoon(150);
     };
 
-    // Slide along the dock to scrub through the sections; the page follows at once, no veil.
+    // Slide a finger along the dock to pick a section: the page stays put while the icon under the
+    // finger lights up; letting go goes there, just like tapping it.
     // A tap stays a tap: the slide only starts once the finger has moved a little.
     let slide: { id: number; x: number; y: number; on: boolean; at?: HTMLAnchorElement } | null = null;
     let swallowClick = false;
     const vertical = dock.dataset.pos === 'right';
-    /** The icon nearest the finger along the dock. */
+    /** The icon nearest the finger along the dock (offset* ignore the swell, so icons don't shift). */
     const itemAt = (x: number, y: number) => {
-      let best = items[0];
-      let gap = Infinity;
-      for (const it of items) {
-        const r = it.getBoundingClientRect();
-        const d = Math.abs((vertical ? y : x) - (vertical ? r.top + r.height / 2 : r.left + r.width / 2));
-        if (d < gap) { gap = d; best = it; }
-      }
-      return best;
+      const box = dock.getBoundingClientRect();
+      const p = vertical ? y - box.top : x - box.left;
+      const centre = (it: HTMLAnchorElement) => (vertical ? it.offsetTop + it.offsetHeight / 2 : it.offsetLeft + it.offsetWidth / 2);
+      return items.reduce((a, b) => (Math.abs(centre(b) - p) < Math.abs(centre(a) - p) ? b : a));
     };
     dock.addEventListener('pointerdown', (e) => {
       if (veiling) return;
@@ -314,48 +318,51 @@ const ITEMS = [
       if (!slide.on) {
         if (Math.hypot(e.clientX - slide.x, e.clientY - slide.y) < 8) return;
         slide.on = true;
-        sliding = true;
         dock.setPointerCapture(e.pointerId);
         dock.setAttribute('data-sliding', '');
-        steering = true;
       }
       const it = itemAt(e.clientX, e.clientY);
       if (it === slide.at) return;
       slide.at = it;
-      mark(it.dataset.target!);
-      document.getElementById(it.dataset.target!)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      items.forEach((x) => x.toggleAttribute('data-under', x === it));
       navigator.vibrate?.(6);
     });
     const endSlide = (e: PointerEvent) => {
       if (!slide || e.pointerId !== slide.id) return;
+      const picked = slide.on && e.type === 'pointerup' ? slide.at : undefined;
       if (slide.on) {
-        sliding = false;
+        items.forEach((x) => x.removeAttribute('data-under'));
+        dock.removeAttribute('data-sliding');
         // The click that may follow a slide isn't a tap (and may never come, so don't wait for it).
         swallowClick = true;
         setTimeout(() => { swallowClick = false; }, 300);
-        dock.removeAttribute('data-sliding');
-        settleSoon(200);
       }
       slide = null;
+      if (picked) go(picked);
     };
     dock.addEventListener('pointerup', endSlide);
     dock.addEventListener('pointercancel', endSlide);
+
+    /** Goes to an icon's section: a smooth scroll when it's near, through the veil when it's far. */
+    const go = (a: HTMLAnchorElement) => {
+      const target = document.getElementById(a.dataset.target!);
+      if (!target || veiling) return;
+      const from = items.findIndex((x) => x.hasAttribute('aria-current'));
+      const steps = Math.abs(items.indexOf(a) - Math.max(0, from));
+      steering = true;
+      mark(a.dataset.target!);
+      dock.removeAttribute('data-away');
+      if (steps > MAX_STEPS && !reduced) { void veilTo(a, target); return; }
+      target.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+      settleSoon(400); // in case the page doesn't need to move at all
+    };
 
     // Without adding #hash entries to the history.
     for (const a of items) {
       a.addEventListener('click', (e) => {
         e.preventDefault();
         if (swallowClick) { swallowClick = false; return; }
-        const target = document.getElementById(a.dataset.target!);
-        if (!target || veiling) return;
-        const from = items.findIndex((x) => x.hasAttribute('aria-current'));
-        const steps = Math.abs(items.indexOf(a) - Math.max(0, from));
-        steering = true;
-        mark(a.dataset.target!);
-        dock.removeAttribute('data-away');
-        if (steps > MAX_STEPS && !reduced) { void veilTo(a, target); return; }
-        target.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
-        settleSoon(400); // in case the page doesn't need to move at all
+        go(a);
       });
     }
 
