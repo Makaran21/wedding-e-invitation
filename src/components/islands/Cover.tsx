@@ -2,9 +2,11 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { wedding } from '@/content/wedding';
 import { markOpened } from '@/lib/events';
 import { loadGuest } from '@/lib/guest';
+import { music } from '@/lib/music';
 import { showProgress } from '@/lib/progress';
 import { monogramSrc } from '@/lib/monogram';
 import MonogramImage from './MonogramImage';
+import SoundToggle from './SoundToggle';
 import s from './Cover.module.css';
 
 /**
@@ -119,6 +121,7 @@ export default function Cover() {
 
   const open = () => {
     if (stage !== 'idle' || !ready) return;
+    music.start(); // inside the tap, so the browser lets it play
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       document.body.classList.remove('is-locked');
       markOpened();
@@ -147,6 +150,7 @@ export default function Cover() {
         <div className={s.glow} />
       </div>
       <canvas ref={dust} className={s.dust} aria-hidden="true" />
+      <SoundToggle className={s.sound} />
 
       <div className={s.content}>
         <header className={s.head}>
@@ -174,13 +178,17 @@ export default function Cover() {
         <div className={s.stage}>
           <div className={s.envelope} onClick={open} aria-hidden="true">
             <div className={s.inside} />
+            {/* The letter inside: the couple's mark, the occasion, their names and the day. */}
             <div className={s.card}>
               {mono
                 ? <MonogramImage src={mono.src} className={s.cardMono} />
                 : <div className={s.monoText}>{couple.monogramKh}</div>}
+              <div className={s.cardTitle}>សិរីមង្គលអាពាហ៍ពិពាហ៍</div>
+              <div className={s.cardLine} />
+              <div className={s.cardNames}>{couple.groom.kh} <span>និង</span> {couple.bride.kh}</div>
+              <div className={s.cardDate}>{wedding.date.fullKh}</div>
               <div className={s.cardLine} />
               <div className={s.cardText}>សូមស្វាគមន៍</div>
-              <div className={s.cardLine} />
             </div>
             <div className={s.pocket} />
             <svg className={s.lines} viewBox="0 0 290 200" preserveAspectRatio="none">

@@ -1,8 +1,7 @@
 ---
 /**
  * Compact dock of section icons, the one in view in gold, on the right edge (default) or along the
- * bottom. Appears once the invitation is open, slips away while scrolling down and comes back on the
- * way up.
+ * bottom. Not shown at first; scrolling down keeps it away, scrolling up brings it out.
  * - Tap: nearby sections scroll into view. One more than two away goes through a veil: it blooms
  *   out of the icon, a title card names the section, then it opens in a circle from the same icon
  *   while the page glides the last stretch into place.
@@ -10,7 +9,11 @@
  * PUBLIC_NAVBAR=false in .env turns it off; PUBLIC_NAVBAR_POSITION=right|bottom places it (both
  * read at build time).
  */
+import { wedding } from '@/content/wedding';
+import { SOUND_ICONS } from '@/lib/soundIcons';
+
 const enabled = import.meta.env.PUBLIC_NAVBAR !== 'false';
+const hasMusic = Boolean(wedding.settings.music);
 const position = import.meta.env.PUBLIC_NAVBAR_POSITION === 'bottom' ? 'bottom' : 'right';
 
 /** The title card shown on a long jump uses each section's own heading, as written on the page. */
@@ -39,6 +42,15 @@ const ITEMS = [
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" set:html={it.icon} />
       </a>
     ))}
+    {hasMusic && (
+      <>
+        {/* The music switch, set apart from the sections by a small gold divider. */}
+        <span class="sep" style={`--i:${ITEMS.length}`} aria-hidden="true"></span>
+        <button type="button" class="item sound" style={`--i:${ITEMS.length + 1}`} data-sound data-icon="on" aria-label="Mute music" hidden>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" data-icon-svg set:html={SOUND_ICONS.on} />
+        </button>
+      </>
+    )}
   </nav>
   <div class="veil" data-veil aria-hidden="true">
     <div class="veil-inner">
@@ -62,7 +74,7 @@ const ITEMS = [
   .dock {
     --hide: translate(-50%, 0) scale(.25);
     --place: translate(-50%, 0);
-    --n: 6;
+    --n: 8;
     /* Above the kbach rails (54), which it sits on when on the right. */
     position: fixed; z-index: 56; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     display: flex; align-items: center; gap: 1px; padding: 3px;
@@ -104,6 +116,18 @@ const ITEMS = [
   .item svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
   .item[aria-current] { color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold)); }
   .item[aria-current] svg { opacity: 1; }
+
+  /* The music switch and its divider. */
+  .sep { flex: none; width: 14px; height: 1px; margin: 3px auto; background: var(--gold-a55); transform: scale(0); transition: transform 160ms ease-in; }
+  .dock[data-pos='bottom'] .sep { width: 1px; height: 14px; margin: auto 3px; }
+  .dock[data-show]:not([data-away]) .sep { transform: none; transition: transform 300ms ease calc(140ms + var(--i) * 45ms); }
+  .sound { border: 0; padding: 0; background: transparent; cursor: pointer; font: inherit; }
+  .sound[hidden] { display: none; }
+  .sound[data-icon='off'] svg { opacity: .55; }
+  .sound :global(.bar) { transform-box: fill-box; transform-origin: bottom; animation: dance 900ms ease-in-out infinite alternate; }
+  .sound :global(.b2) { animation-duration: 700ms; animation-delay: -300ms; }
+  .sound :global(.b3) { animation-duration: 1100ms; animation-delay: -600ms; }
+  @keyframes dance { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
   /* Sliding: the finger owns the dock (no page scroll), and the icon under it swells. */
   .dock { touch-action: none; }
   /* While sliding: no glass blur to repaint every frame, and icons react at once (no pop-in stagger). */
@@ -167,9 +191,11 @@ const ITEMS = [
 <script>
   import { onOpened } from '@/lib/events';
   import { REVEAL_ALL_EVENT } from '@/scripts/reveal';
+  import { music } from '@/lib/music';
+  import { SOUND_ICONS } from '@/lib/soundIcons';
 
-  /** Save the Date has finished building by then; the dock follows. */
-  const SHOW_AFTER_MS = 4200;
+  /** Scrolled less than this from the top, the dock stays tucked away. */
+  const TOP_PX = 120;
 
   const dock = document.querySelector<HTMLElement>('[data-dock]');
   if (dock) {
@@ -413,18 +439,34 @@ const ITEMS = [
       });
     }
 
-    // Away while scrolling down, back on the way up or near the end of the page.
+    // Not shown at first. Scrolling down keeps it away; scrolling up brings it out (except at the
+    // very top of the page).
+    let opened = false;
     let lastY = window.scrollY;
     window.addEventListener('scroll', () => {
       const y = window.scrollY;
-      const nearEnd = y + window.innerHeight > document.documentElement.scrollHeight - 80;
       if (steering) { lastY = y; if (!veiling) settleSoon(150); return; }
-      if (Math.abs(y - lastY) > 8) {
-        dock.toggleAttribute('data-away', y > lastY && y > 200 && !nearEnd);
-        lastY = y;
-      }
+      if (Math.abs(y - lastY) < 8) return;
+      dock.toggleAttribute('data-show', opened && y < lastY && y > TOP_PX);
+      lastY = y;
     }, { passive: true });
+    onOpened(() => { opened = true; });
 
-    onOpened(() => setTimeout(() => dock.setAttribute('data-show', ''), SHOW_AFTER_MS));
+    // The music switch: shows only when there's music; its icon follows the music's state.
+    const sound = dock.querySelector<HTMLButtonElement>('[data-sound]');
+    if (sound) {
+      const svg = sound.querySelector('svg')!;
+      const sep = dock.querySelector<HTMLElement>('.sep');
+      music.subscribe((st) => {
+        sound.hidden = !st.available;
+        if (sep) sep.hidden = !st.available;
+        const icon = st.muted ? 'off' : st.playing ? 'playing' : 'on';
+        if (sound.dataset.icon !== icon) { sound.dataset.icon = icon; svg.innerHTML = SOUND_ICONS[icon]; }
+        sound.setAttribute('aria-label', st.muted ? 'Turn music on' : 'Mute music');
+      });
+      sound.addEventListener('click', () => music.toggle());
+      // A press on the switch isn't the start of a slide through the sections.
+      sound.addEventListener('pointerdown', (e) => e.stopPropagation());
+    }
   }
 </script>

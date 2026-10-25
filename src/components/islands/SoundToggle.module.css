@@ -1,0 +1,19 @@
+.btn {
+  display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+  color: var(--gold-lt); border: 1px solid rgba(217, 164, 65, 0.55);
+  background: rgba(44, 5, 16, 0.45);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(20, 2, 6, 0.35);
+  -webkit-tap-highlight-color: transparent; transition: transform 150ms ease;
+}
+.btn:active { transform: scale(.92); }
+.btn:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 3px; }
+.btn svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.btn[data-icon='off'] { color: var(--gold-pale); opacity: .85; }
+
+/* Playing: three bars dancing to their own beat. */
+.btn :global(.bar) { transform-box: fill-box; transform-origin: bottom; animation: dance 900ms ease-in-out infinite alternate; }
+.btn :global(.b2) { animation-duration: 700ms; animation-delay: -300ms; }
+.btn :global(.b3) { animation-duration: 1100ms; animation-delay: -600ms; }
+@keyframes dance { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .btn :global(.bar) { animation: none; } }

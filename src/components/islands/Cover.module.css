@@ -90,6 +90,13 @@
 @keyframes breathe { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .7; scale: .94; } }
 .dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; animation: fadeIn 1600ms ease-out 800ms forwards; }
 
+/* Music on / off, top right. */
+.sound {
+  position: absolute; z-index: 3; top: calc(14px + var(--safe-top)); right: 14px;
+  opacity: 0; animation: fadeIn 800ms ease 1200ms forwards;
+}
+.cover:not([data-stage='idle']) .sound { animation: away 400ms ease forwards; }
+
 /* ---------- Layout ---------- */
 
 .content {
@@ -168,12 +175,16 @@
 
 .card {
   position: absolute; left: 7%; right: 7%; top: 7%; height: 86%; z-index: 2; border-radius: 6px;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 7px; padding-top: 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 5px; padding-top: 12px; text-align: center;
   background: linear-gradient(180deg, var(--paper) 0%, var(--cream) 60%, var(--paper-dk) 100%);
   box-shadow: inset 0 0 0 1px rgba(217, 164, 65, 0.6), inset 0 0 0 4px var(--paper), inset 0 0 0 5px rgba(217, 164, 65, 0.35);
 }
-.cardMono { display: block; width: 46px; height: auto; pointer-events: none; }
-.cardText { font-family: var(--kh-font); font-size: 13px; line-height: 1.8; color: var(--wine-700); }
+.cardMono { display: block; width: 38px; height: auto; pointer-events: none; }
+.cardTitle { font-family: var(--kh-font); font-size: 12.5px; line-height: 1.7; color: var(--wine-700); }
+.cardNames { font-family: var(--kh-font); font-size: 10.5px; line-height: 1.7; color: var(--brown); }
+.cardNames span { color: var(--gold-dk); font-size: 9.5px; }
+.cardDate { font-family: var(--kh-font); font-size: 9.5px; line-height: 1.6; color: var(--rose); }
+.cardText { font-family: var(--kh-font); font-size: 11px; line-height: 1.7; color: var(--wine-700); }
 .cardLine { width: 40px; height: 1px; background: linear-gradient(to right, rgba(217, 164, 65, 0), var(--gold), rgba(217, 164, 65, 0)); }
 
 /* The front pocket: the whole face except a V notch at the top, which the flap covers. */

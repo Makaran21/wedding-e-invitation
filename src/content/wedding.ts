@@ -41,6 +41,8 @@ export interface Settings {
   lockUntilOpened: boolean;
   /** Which opening cover to show. A link can override it to compare: ?intro=vertical, ?intro=envelope or ?intro=lotus. */
   intro: 'Vertical' | 'Envelope' | 'Lotus';
+  /** Background music, a file in public/ (e.g. '/assets/music/wedding.mp3'); '' for none. Starts when the guest opens the envelope. */
+  music: string;
 }
 
 export interface WeddingContent {
@@ -162,5 +164,6 @@ export const wedding: WeddingContent = {
     mapStyle: 'Dark matter',
     lockUntilOpened: true,
     intro: 'Envelope',
+    music: '/assets/music/wedding.mp3',
   },
 };
