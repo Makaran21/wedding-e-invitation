@@ -10,8 +10,22 @@
  * PUBLIC_NAVBAR=false in .env turns it off; PUBLIC_NAVBAR_POSITION=right|bottom places it (both
  * read at build time).
  */
+import { wedding } from '@/content/wedding';
+import { MONOGRAM_FALLBACK, monogramSrc } from '@/lib/monogram';
+
 const enabled = import.meta.env.PUBLIC_NAVBAR !== 'false';
 const position = import.meta.env.PUBLIC_NAVBAR_POSITION === 'bottom' ? 'bottom' : 'right';
+const mono = monogramSrc(wedding.settings.monogram)?.src ?? MONOGRAM_FALLBACK;
+
+/** The title card shown on a long jump uses each section's own heading, as written on the page. */
+const TITLES: Record<string, { kh: string; en: string }> = {
+  date: { kh: 'ថ្ងៃមង្គល', en: 'Save the date' },
+  letter: { kh: 'សិរីមង្គលអាពាហ៍ពិពាហ៍', en: 'The invitation' },
+  gallery: { kh: 'កម្រងរូបភាព', en: 'Gallery' },
+  program: { kh: 'កម្មវិធីពិធីមង្គលការ', en: 'Order of ceremony' },
+  venue: { kh: 'ទីតាំងពិធី', en: 'Venue' },
+  wishes: { kh: 'សៀវភៅជូនពរ', en: 'Wishes for the couple' },
+};
 
 const ITEMS = [
   { id: 'date', kh: 'ថ្ងៃ', en: 'Date', icon: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/>' },
@@ -25,27 +39,28 @@ const ITEMS = [
 {enabled && (
   <nav class="dock" aria-label="Sections" data-dock data-pos={position}>
     {ITEMS.map((it) => (
-      <a href={`#${it.id}`} class="item" style={`--i:${ITEMS.indexOf(it)}`} data-target={it.id} data-kh={it.kh} data-en={it.en} aria-label={`${it.kh} · ${it.en}`}>
+      <a href={`#${it.id}`} class="item" style={`--i:${ITEMS.indexOf(it)}`} data-target={it.id} data-title-kh={TITLES[it.id].kh} data-title-en={TITLES[it.id].en} aria-label={`${it.kh} · ${it.en}`}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" set:html={it.icon} />
       </a>
     ))}
   </nav>
   <div class="veil" data-veil aria-hidden="true">
     <div class="veil-inner">
-      <!-- The section's icon, glowing softly. -->
-      <div class="veil-medal" data-veil-medal>
-        <svg class="veil-icon" viewBox="0 0 24 24" data-veil-icon></svg>
+      <!-- A gold-framed plaque with kbach corners, like the envelope: monogram, ornament, heading. -->
+      <div class="veil-plaque" data-veil-plaque>
+        <svg class="veil-corner tl" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
+        <svg class="veil-corner tr" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
+        <svg class="veil-corner bl" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
+        <svg class="veil-corner br" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
+        <img class="veil-mono" src={mono} alt="" data-veil-mono />
+        <div class="veil-orn" data-veil-orn>
+          <div class="pair"><div class="rule-fade-r l1"></div><div class="rule-fade-r l2"></div></div>
+          <div class="gem"></div>
+          <div class="pair"><div class="rule-fade-l l1"></div><div class="rule-fade-l l2 right"></div></div>
+        </div>
+        <span class="veil-name" data-veil-name></span>
+        <span class="veil-en" data-veil-en></span>
       </div>
-      <span class="veil-name" data-veil-name></span>
-      <svg class="veil-orn" viewBox="0 0 160 14" data-veil-orn>
-        <path class="veil-orn-l" d="M74 7 H8" pathLength="1" />
-        <path class="veil-orn-r" d="M86 7 H152" pathLength="1" />
-        <circle cx="4" cy="7" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="156" cy="7" r="1.4" fill="currentColor" stroke="none" />
-        <path d="M80 1.5 L85.5 7 L80 12.5 L74.5 7 Z" />
-        <path d="M80 4.5 L82.5 7 L80 9.5 L77.5 7 Z" fill="currentColor" stroke="none" />
-      </svg>
-      <span class="veil-en" data-veil-en></span>
     </div>
   </div>
 )}
@@ -129,30 +144,37 @@ const ITEMS = [
     mask: radial-gradient(circle at var(--hx) var(--hy), transparent var(--hole), #000 calc(var(--hole) + 1px));
   }
   @property --hole { syntax: '<length>'; inherits: false; initial-value: 0px; }
-  /* The title card. Hidden until the veil has spread; the script plays each piece in. */
-  .veil-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0; }
-  .veil-medal {
-    position: relative; width: 64px; height: 64px; display: grid; place-items: center;
-    color: var(--gold-lt); border-radius: 50%;
-    background: radial-gradient(circle, rgba(244, 218, 155, 0.18), rgba(244, 218, 155, 0) 70%);
+  /* The title card, in the site's own heading style. Hidden until the veil has spread; the script
+     plays each piece in. */
+  .veil-inner { position: relative; opacity: 0; }
+  .veil-plaque {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    min-width: 230px; max-width: calc(100vw - 80px); padding: 26px 30px 24px; box-sizing: border-box; text-align: center;
+    border: 1px solid var(--gold-a55); background: rgba(44, 5, 16, 0.35);
+    box-shadow: inset 0 0 0 4px rgba(44, 5, 16, 0.35), inset 0 0 0 5px var(--gold-a28), 0 14px 40px rgba(20, 2, 6, 0.4);
   }
-  .veil-icon {
-    width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
-    filter: drop-shadow(0 0 6px rgba(244, 218, 155, 0.6));
-  }
+  .veil-corner { position: absolute; width: 30px; height: 30px; }
+  .veil-corner.tl { left: 4px; top: 4px; }
+  .veil-corner.tr { right: 4px; top: 4px; transform: scaleX(-1); }
+  .veil-corner.bl { left: 4px; bottom: 4px; transform: scaleY(-1); }
+  .veil-corner.br { right: 4px; bottom: 4px; transform: scale(-1, -1); }
+  .veil-mono { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(217, 164, 65, 0.45)); }
+  /* The double gold rules and diamond from the section headings. */
+  .veil-orn { display: flex; align-items: center; gap: 12px; }
+  .veil-orn .pair { display: flex; flex-direction: column; gap: 4px; }
+  .veil-orn .l1 { width: 48px; }
+  .veil-orn .l2 { width: 28px; margin-left: auto; opacity: .57; }
+  .veil-orn .l2.right { margin-left: 0; }
+  .veil-orn .pair:first-child > * { transform-origin: right; }
+  .veil-orn .pair:last-child > * { transform-origin: left; }
+  .veil-orn .gem { width: 7px; height: 7px; transform: rotate(45deg); background: var(--gold); }
   .veil-name {
-    font-family: 'Moul', var(--kh-font); font-size: 28px; line-height: 1.9;
-    background:
-      linear-gradient(105deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 60%) 200% 0 / 300% 100% no-repeat,
-      linear-gradient(180deg, #FFF5D2 0%, #F4DA9B 30%, #D9A441 55%, #A9721F 72%, #E9C674 88%, #FBE7B0 100%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 1.5px 0 rgba(58, 8, 18, 0.85)) drop-shadow(0 0 12px rgba(217, 164, 65, 0.3));
+    font-family: var(--kh-font); font-size: 21px; line-height: 1.7; color: var(--gold-lt);
+    text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6), 0 0 16px rgba(217, 164, 65, 0.25);
   }
-  .veil-orn { width: 160px; height: 14px; fill: none; stroke: var(--gold-lt); stroke-width: 0.9; color: var(--gold-lt); }
-  .veil-orn-l, .veil-orn-r { stroke-dasharray: 1; stroke-dashoffset: 1; }
   .veil-en {
-    font-family: var(--en-font); font-size: 10px; letter-spacing: 0.42em; padding-left: 0.42em; text-transform: uppercase;
-    color: var(--gold-pale); opacity: .85;
+    font-family: var(--en-font); font-size: 9.5px; letter-spacing: 0.3em; padding-left: 0.3em; text-transform: uppercase;
+    color: var(--gold);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -202,38 +224,35 @@ const ITEMS = [
     const veil = document.querySelector<HTMLElement>('[data-veil]');
     const veilName = document.querySelector<HTMLElement>('[data-veil-name]');
     const veilEn = document.querySelector<HTMLElement>('[data-veil-en]');
-    const veilIcon = document.querySelector<SVGElement>('[data-veil-icon]');
-    const veilMedal = document.querySelector<HTMLElement>('[data-veil-medal]');
-    const veilOrn = document.querySelector<SVGElement>('[data-veil-orn]');
+    const veilPlaque = document.querySelector<HTMLElement>('[data-veil-plaque]');
+    const veilMono = document.querySelector<HTMLElement>('[data-veil-mono]');
+    const veilOrn = document.querySelector<HTMLElement>('[data-veil-orn]');
 
-    /** Plays the title card in: the icon turns in, the name rises with a glint,
-     *  the ornament draws outwards, the English name settles. Resolves when it has all landed. */
+    /** Plays the title card in: the plaque settles, the monogram drops in, the rules draw out from
+     *  the diamond, the heading rises, the English settles. Resolves when it has all landed.
+     *  `both`: delayed pieces stay hidden through their delay instead of showing, then snapping back. */
     const playCard = (inner: HTMLElement) => {
       const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-      // `both`: delayed pieces stay hidden through their delay instead of showing, then snapping back.
-      const lines = veilOrn!.querySelectorAll('.veil-orn-l, .veil-orn-r');
-      inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
+      const rules = veilOrn!.querySelectorAll('.pair > *');
+      inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, fill: 'forwards' });
       const steps = [
-        veilMedal!.animate([
-          { transform: 'scale(.6) rotate(-30deg)', opacity: 0 },
-          { transform: 'none', opacity: 1 },
-        ], { duration: 220, easing: ease, fill: 'both' }),
+        veilPlaque!.animate([{ transform: 'scale(.96)' }, { transform: 'none' }], { duration: 380, easing: ease, fill: 'both' }),
+        veilMono!.animate([
+          { opacity: 0, transform: 'translateY(-8px) scale(.85)' },
+          { opacity: 1, transform: 'none' },
+        ], { duration: 320, delay: 40, easing: ease, fill: 'both' }),
+        ...Array.from(rules, (l) => l.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], {
+          duration: 320, delay: 100, easing: ease, fill: 'both',
+        })),
         veilName!.animate([
           { opacity: 0, transform: 'translateY(8px)' },
           { opacity: 1, transform: 'none' },
-        ], { duration: 240, delay: 40, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'both' }),
+        ], { duration: 320, delay: 120, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'both' }),
         veilEn!.animate([
-          { opacity: 0, letterSpacing: '0.9em' },
-          { opacity: 0.85, letterSpacing: '0.42em' },
-        ], { duration: 240, delay: 60, easing: ease, fill: 'both' }),
-        ...Array.from(lines, (l) => l.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
-          duration: 220, delay: 60, easing: ease, fill: 'both',
-        })),
+          { opacity: 0, letterSpacing: '0.6em' },
+          { opacity: 1, letterSpacing: '0.3em' },
+        ], { duration: 320, delay: 160, easing: ease, fill: 'both' }),
       ];
-      // A white glint runs through the name once it has risen.
-      veilName!.animate([{ backgroundPosition: '200% 0, 0 0' }, { backgroundPosition: '-100% 0, 0 0' }], {
-        duration: 350, delay: 140, easing: 'ease-in-out',
-      });
       return Promise.all(steps.map((s) => s.finished));
     };
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -256,17 +275,16 @@ const ITEMS = [
 
     /** Blooms the veil out of the tapped icon, names the section, jumps, then lifts the veil. */
     const veilTo = async (a: HTMLAnchorElement, target: HTMLElement) => {
-      if (!veil || !veilName || !veilEn || !veilIcon || !veilMedal || !veilOrn) return;
+      if (!veil || !veilName || !veilEn || !veilPlaque || !veilMono || !veilOrn) return;
       veiling = true;
       const icon = a.getBoundingClientRect();
       const x = icon.left + icon.width / 2;
       const y = icon.top + icon.height / 2;
-      veilName.textContent = a.dataset.kh ?? '';
-      veilEn.textContent = a.dataset.en ?? '';
-      veilIcon.innerHTML = a.querySelector('svg')?.innerHTML ?? '';
+      veilName.textContent = a.dataset.titleKh ?? '';
+      veilEn.textContent = a.dataset.titleEn ?? '';
       veil.setAttribute('data-on', '');
       await veil.animate([{ clipPath: `circle(0% at ${x}px ${y}px)` }, { clipPath: `circle(150% at ${x}px ${y}px)` }], {
-        duration: 240, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
+        duration: 300, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
       }).finished;
       const inner = veil.querySelector<HTMLElement>('.veil-inner')!;
       await playCard(inner);
@@ -275,7 +293,7 @@ const ITEMS = [
       const down = end > window.scrollY;
       const landing = Math.max(0, end + (down ? -GLIDE_PX : GLIDE_PX));
       window.scrollTo({ top: landing, behavior: 'instant' });
-      await new Promise((done) => setTimeout(done, 20));
+      await new Promise((done) => setTimeout(done, 60));
       // Open on the section: a circle grows from the same icon while the page glides in.
       const reach = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
       veil.style.setProperty('--hx', `${x}px`);
@@ -284,9 +302,9 @@ const ITEMS = [
       inner.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.94)' }], { duration: 180, easing: 'ease-in', fill: 'forwards' });
       await Promise.all([
         veil.animate([{ '--hole': '0px' }, { '--hole': `${reach}px` }], {
-          duration: 320, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
+          duration: 380, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
         }).finished,
-        glide(landing, end, 400),
+        glide(landing, end, 480),
       ]);
       veil.removeAttribute('data-on');
       veil.removeAttribute('data-opening');
