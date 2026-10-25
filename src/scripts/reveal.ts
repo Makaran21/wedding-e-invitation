@@ -2,6 +2,8 @@
 // setupReveal() / settle() / setupParallax() / sweepReveal().
 
 const EASE = 'cubic-bezier(0.16,0.84,0.28,1)';
+/** Dispatched on window to show every section at once, with no fade (e.g. while scrubbing the page). */
+export const REVEAL_ALL_EVENT = 'invitation:reveal-all';
 let started = false;
 
 function settle(el: HTMLElement): void {
@@ -117,6 +119,16 @@ export function setupReveal(): void {
     sweep();
     if (els.every((el) => el.style.opacity !== '0')) clearInterval(timer);
   }, 400);
+
+  window.addEventListener(REVEAL_ALL_EVENT, () => {
+    for (const el of els) {
+      if (el.style.opacity !== '0') continue;
+      el.style.transition = 'none';
+      for (const c of Array.from(el.children) as HTMLElement[]) c.style.transition = 'none';
+      settle(el);
+      io.unobserve(el);
+    }
+  });
 
   setupParallax();
 }

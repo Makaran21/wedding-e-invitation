@@ -67,7 +67,7 @@ const ITEMS = [
     position: fixed; z-index: 56; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     display: flex; align-items: center; gap: 1px; padding: 3px;
     border-radius: 999px; border: 1px solid rgba(217, 164, 65, 0.45);
-    background: rgba(44, 5, 16, 0.78);
+    background: rgba(44, 5, 16, 0.5);
     -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
     box-shadow: 0 10px 28px rgba(20, 2, 6, 0.45), inset 0 1px 0 rgba(244, 218, 155, 0.12);
     transform: var(--hide); opacity: 0; pointer-events: none;
@@ -106,9 +106,11 @@ const ITEMS = [
   .item[aria-current] svg { opacity: 1; }
   /* Sliding: the finger owns the dock (no page scroll), and the icon under it swells. */
   .dock { touch-action: none; }
-  .dock[data-show][data-sliding] .item { transition: background-color 120ms ease, color 120ms ease, transform 160ms ease; }
+  /* While sliding: no glass blur to repaint every frame, and icons react at once (no pop-in stagger). */
+  .dock[data-show][data-sliding] { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(44, 5, 16, 0.62); }
+  .dock[data-show][data-sliding]:not([data-away]) .item { transition: background-color 120ms ease, color 120ms ease, transform 160ms ease; }
   /* While sliding, the icon under the finger (the section in view) swells. */
-  .dock[data-show][data-sliding] .item[data-under] { transform: scale(1.28); box-shadow: 0 0 14px rgba(244, 218, 155, 0.55); }
+  .dock[data-show][data-sliding]:not([data-away]) .item[data-under] { transform: scale(1.28); box-shadow: 0 0 14px rgba(244, 218, 155, 0.55); }
   .item:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 2px; }
 
   /* The veil for long jumps: wine with a whisper of damask, the section's name in gold. */
@@ -164,6 +166,7 @@ const ITEMS = [
 
 <script>
   import { onOpened } from '@/lib/events';
+  import { REVEAL_ALL_EVENT } from '@/scripts/reveal';
 
   /** Save the Date has finished building by then; the dock follows. */
   const SHOW_AFTER_MS = 4200;
@@ -298,16 +301,29 @@ const ITEMS = [
     };
 
     // Slide a finger along the dock like holding a scrollbar's thumb: where the finger is maps
-    // straight to where the page is. Each icon's centre lines up with the top of its section, and
-    // in between the page sits in between, so the page moves exactly with the finger. No veil.
+    // to where the page is. Each icon's centre lines up with the top of its section, and in between
+    // the page sits in between; the page eases there smoothly rather than jumping. No veil.
     // A tap stays a tap: the slide only starts once the finger has moved a little.
     let slide: { id: number; x: number; y: number; on: boolean } | null = null;
     let swallowClick = false;
     const vertical = dock.dataset.pos === 'right';
     /** Icon centres along the dock and their sections' tops, measured as the slide starts. */
     let stops: { at: number; top: number; item: HTMLAnchorElement }[] = [];
-    let frame = 0;
-    let pending = 0;
+    /** Where the finger says the page should be; the page eases there a good part of the way each frame. */
+    let goal = 0;
+    let following = false;
+    const follow = () => {
+      const y = window.scrollY;
+      const left = goal - y;
+      if (Math.abs(left) < 1 && !sliding) {
+        window.scrollTo({ top: goal, behavior: 'instant' });
+        following = false;
+        settleSoon(150);
+        return;
+      }
+      if (Math.abs(left) >= 1) window.scrollTo({ top: y + left * 0.3, behavior: 'instant' });
+      requestAnimationFrame(follow);
+    };
 
     const measure = () => {
       const box = dock.getBoundingClientRect();
@@ -344,21 +360,18 @@ const ITEMS = [
         steering = true;
         dock.setPointerCapture(e.pointerId);
         dock.setAttribute('data-sliding', '');
+        // Sections that haven't faded in yet would flash in and out as the page races past them.
+        window.dispatchEvent(new Event(REVEAL_ALL_EVENT));
         measure();
       }
-      pending = vertical ? e.clientY : e.clientX;
-      // One scroll per frame, at the finger's latest position.
-      if (!frame) {
-        frame = requestAnimationFrame(() => {
-          frame = 0;
-          window.scrollTo({ top: topFor(pending), behavior: 'instant' });
-          const it = nearest(pending);
-          if (!it.hasAttribute('data-under')) {
-            mark(it.dataset.target!);
-            items.forEach((x) => x.toggleAttribute('data-under', x === it));
-            navigator.vibrate?.(6);
-          }
-        });
+      const p = vertical ? e.clientY : e.clientX;
+      goal = topFor(p);
+      if (!following) { following = true; requestAnimationFrame(follow); }
+      const it = nearest(p);
+      if (!it.hasAttribute('data-under')) {
+        mark(it.dataset.target!);
+        items.forEach((x) => x.toggleAttribute('data-under', x === it));
+        navigator.vibrate?.(6);
       }
     });
     const endSlide = (e: PointerEvent) => {
@@ -370,7 +383,7 @@ const ITEMS = [
         swallowClick = true;
         setTimeout(() => { swallowClick = false; }, 300);
         dock.removeAttribute('data-sliding');
-        settleSoon(200);
+        if (!following) settleSoon(200);
       }
       slide = null;
     };
