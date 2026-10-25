@@ -180,10 +180,12 @@
   box-shadow: inset 0 0 0 1px rgba(217, 164, 65, 0.6), inset 0 0 0 4px var(--paper), inset 0 0 0 5px rgba(217, 164, 65, 0.35);
 }
 .cardTitle { font-family: var(--kh-font); font-size: 12.5px; line-height: 1.7; color: var(--wine-700); }
-/* The poem spreads over the rest of the page, line by line. */
+/* The poem fills the rest of the page as one justified block, fading out at the foot. */
 .cardPoem {
-  flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding-bottom: 4px;
-  font-family: var(--kh-font); font-size: 4.2px; line-height: 1.5; color: var(--brown); opacity: .7;
+  flex: 1; min-height: 0; width: 100%; margin: 0; overflow: hidden;
+  font-family: var(--kh-font); font-size: 4.6px; line-height: 1.55; color: var(--brown); opacity: .7;
+  text-align: justify; text-align-last: center;
+  -webkit-mask: linear-gradient(180deg, #000 85%, transparent); mask: linear-gradient(180deg, #000 85%, transparent);
 }
 .cardLine { width: 40px; height: 1px; background: linear-gradient(to right, rgba(217, 164, 65, 0), var(--gold), rgba(217, 164, 65, 0)); }
 

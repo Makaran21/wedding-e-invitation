@@ -199,9 +199,8 @@ export default function Cover() {
             <div className={s.card}>
               <div className={s.cardTitle}>សិរីមង្គលអាពាហ៍ពិពាហ៍</div>
               <div className={s.cardLine} />
-              <div className={s.cardPoem} aria-hidden="true">
-                {POEM.map((line) => <span key={line}>{line}</span>)}
-              </div>
+              {/* One solid paragraph, the poem running on (and again) until the page is full. */}
+              <p className={s.cardPoem} aria-hidden="true">{[...POEM, ...POEM, ...POEM].join(' ')}</p>
             </div>
             <div className={s.pocket} />
             <svg className={s.lines} viewBox="0 0 290 200" preserveAspectRatio="none">
