@@ -5,7 +5,7 @@
  * - Tap: nearby sections scroll into view. One more than two away goes through a veil: it blooms
  *   out of the icon, a title card names the section, then it opens in a circle from the same icon
  *   while the page glides the last stretch into place.
- * - Slide a finger along it: like holding a scrollbar, the page scrolls with the finger, no veil.
+ * - Slide a finger along it to pick a section; the page waits, and letting go goes there like a tap.
  * PUBLIC_NAVBAR=false in .env turns it off; PUBLIC_NAVBAR_POSITION=right|bottom places it (both
  * read at build time).
  */
@@ -133,8 +133,14 @@ const ITEMS = [
   /* While sliding: no glass blur to repaint every frame, and icons react at once (no pop-in stagger). */
   .dock[data-show][data-sliding] { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(44, 5, 16, 0.62); }
   .dock[data-show][data-sliding]:not([data-away]) .item { transition: background-color 120ms ease, color 120ms ease, transform 160ms ease; }
-  /* While sliding, the icon under the finger (the section in view) swells. */
-  .dock[data-show][data-sliding]:not([data-away]) .item[data-under] { transform: scale(1.28); box-shadow: 0 0 14px rgba(244, 218, 155, 0.55); }
+  /* While sliding, the icon under the finger is the gold one; the current section's steps back. */
+  .dock[data-show][data-sliding] .item[aria-current]:not([data-under]) { color: var(--gold-pale); background: transparent; }
+  .dock[data-show][data-sliding] .item[aria-current]:not([data-under]) svg { opacity: .75; }
+  .dock[data-show][data-sliding]:not([data-away]) .item[data-under] {
+    transform: scale(1.28); color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold));
+    box-shadow: 0 0 14px rgba(244, 218, 155, 0.55);
+  }
+  .dock[data-show][data-sliding] .item[data-under] svg { opacity: 1; }
   .item:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 2px; }
 
   /* The veil for long jumps: wine with a whisper of damask, the section's name in gold. */
@@ -190,7 +196,6 @@ const ITEMS = [
 
 <script>
   import { onOpened } from '@/lib/events';
-  import { REVEAL_ALL_EVENT } from '@/scripts/reveal';
   import { music } from '@/lib/music';
   import { SOUND_ICONS } from '@/lib/soundIcons';
 
@@ -221,10 +226,8 @@ const ITEMS = [
     // the screen); the next real scroll takes over again.
     const settleSoon = (ms: number) => {
       clearTimeout(quiet);
-      quiet = window.setTimeout(() => { if (!sliding) steering = false; }, ms);
+      quiet = window.setTimeout(() => { steering = false; }, ms);
     };
-    /** True while a finger is sliding along the dock. */
-    let sliding = false;
 
     const io = new IntersectionObserver((entries) => {
       if (steering) return;
@@ -326,53 +329,19 @@ const ITEMS = [
       settleSoon(150);
     };
 
-    // Slide a finger along the dock like holding a scrollbar's thumb: where the finger is maps
-    // to where the page is. Each icon's centre lines up with the top of its section, and in between
-    // the page sits in between; the page eases there smoothly rather than jumping. No veil.
+    // Slide a finger along the dock to pick a section: the page stays put while the icon under the
+    // finger lights up; letting go goes there, just like tapping it.
     // A tap stays a tap: the slide only starts once the finger has moved a little.
-    let slide: { id: number; x: number; y: number; on: boolean } | null = null;
+    let slide: { id: number; x: number; y: number; on: boolean; at?: HTMLAnchorElement } | null = null;
     let swallowClick = false;
     const vertical = dock.dataset.pos === 'right';
-    /** Icon centres along the dock and their sections' tops, measured as the slide starts. */
-    let stops: { at: number; top: number; item: HTMLAnchorElement }[] = [];
-    /** Where the finger says the page should be; the page eases there a good part of the way each frame. */
-    let goal = 0;
-    let following = false;
-    const follow = () => {
-      const y = window.scrollY;
-      const left = goal - y;
-      if (Math.abs(left) < 1 && !sliding) {
-        window.scrollTo({ top: goal, behavior: 'instant' });
-        following = false;
-        settleSoon(150);
-        return;
-      }
-      if (Math.abs(left) >= 1) window.scrollTo({ top: y + left * 0.3, behavior: 'instant' });
-      requestAnimationFrame(follow);
-    };
-
-    const measure = () => {
+    /** The icon nearest the finger along the dock (offset* ignore the swell, so icons don't shift). */
+    const itemAt = (x: number, y: number) => {
       const box = dock.getBoundingClientRect();
-      const maxTop = document.documentElement.scrollHeight - window.innerHeight;
-      // offset* ignore the swell transform, so the stops don't move as icons grow.
-      stops = items.map((item) => ({
-        item,
-        at: vertical ? box.top + item.offsetTop + item.offsetHeight / 2 : box.left + item.offsetLeft + item.offsetWidth / 2,
-        top: Math.min(maxTop, (document.getElementById(item.dataset.target!)?.getBoundingClientRect().top ?? 0) + window.scrollY),
-      }));
+      const p = vertical ? y - box.top : x - box.left;
+      const centre = (it: HTMLAnchorElement) => (vertical ? it.offsetTop + it.offsetHeight / 2 : it.offsetLeft + it.offsetWidth / 2);
+      return items.reduce((a, b) => (Math.abs(centre(b) - p) < Math.abs(centre(a) - p) ? b : a));
     };
-    /** The page position for a finger at `p` along the dock. */
-    const topFor = (p: number) => {
-      if (p <= stops[0].at) return stops[0].top;
-      const last = stops[stops.length - 1];
-      if (p >= last.at) return last.top;
-      const i = stops.findIndex((s, k) => p >= s.at && p < stops[k + 1].at);
-      const t = (p - stops[i].at) / (stops[i + 1].at - stops[i].at);
-      return stops[i].top + t * (stops[i + 1].top - stops[i].top);
-    };
-    /** The icon nearest the finger. */
-    const nearest = (p: number) => stops.reduce((a, b) => (Math.abs(b.at - p) < Math.abs(a.at - p) ? b : a)).item;
-
     dock.addEventListener('pointerdown', (e) => {
       if (veiling) return;
       slide = { id: e.pointerId, x: e.clientX, y: e.clientY, on: false };
@@ -382,36 +351,27 @@ const ITEMS = [
       if (!slide.on) {
         if (Math.hypot(e.clientX - slide.x, e.clientY - slide.y) < 8) return;
         slide.on = true;
-        sliding = true;
-        steering = true;
         dock.setPointerCapture(e.pointerId);
         dock.setAttribute('data-sliding', '');
-        // Sections that haven't faded in yet would flash in and out as the page races past them.
-        window.dispatchEvent(new Event(REVEAL_ALL_EVENT));
-        measure();
       }
-      const p = vertical ? e.clientY : e.clientX;
-      goal = topFor(p);
-      if (!following) { following = true; requestAnimationFrame(follow); }
-      const it = nearest(p);
-      if (!it.hasAttribute('data-under')) {
-        mark(it.dataset.target!);
-        items.forEach((x) => x.toggleAttribute('data-under', x === it));
-        navigator.vibrate?.(6);
-      }
+      const it = itemAt(e.clientX, e.clientY);
+      if (it === slide.at) return;
+      slide.at = it;
+      items.forEach((x) => x.toggleAttribute('data-under', x === it));
+      navigator.vibrate?.(6);
     });
     const endSlide = (e: PointerEvent) => {
       if (!slide || e.pointerId !== slide.id) return;
+      const picked = slide.on && e.type === 'pointerup' ? slide.at : undefined;
       if (slide.on) {
-        sliding = false;
         items.forEach((x) => x.removeAttribute('data-under'));
+        dock.removeAttribute('data-sliding');
         // The click that may follow a slide isn't a tap (and may never come, so don't wait for it).
         swallowClick = true;
         setTimeout(() => { swallowClick = false; }, 300);
-        dock.removeAttribute('data-sliding');
-        if (!following) settleSoon(200);
       }
       slide = null;
+      if (picked) go(picked);
     };
     dock.addEventListener('pointerup', endSlide);
     dock.addEventListener('pointercancel', endSlide);

@@ -4,7 +4,8 @@ import { wedding } from '@/content/wedding';
  * Background music. It starts when the guest opens the envelope (a tap, which browsers require
  * before playing sound), fades in, loops, and pauses while the page is hidden. The guest can mute
  * it from the cover or the dock; the choice is remembered. The buttons show whenever a file is set
- * in settings.music (hidden only when it's '').
+ * in settings.music (hidden only when it's ''). Until a real song is there, the switch behaves as if
+ * one were playing, so the controls can be tried out.
  */
 const MUTE_KEY = 'music-muted';
 const VOLUME = 0.6;
@@ -26,9 +27,8 @@ function load(): HTMLAudioElement | null {
   audio.loop = true;
   audio.preload = 'metadata';
   audio.volume = 0;
-  audio.addEventListener('error', () => { state.playing = false; emit(); });
-  audio.addEventListener('playing', () => { state.playing = true; emit(); });
-  audio.addEventListener('pause', () => { state.playing = false; emit(); });
+  // `playing` follows what the guest asked for (started and not muted), so the switch reads right
+  // even while there's no song file yet.
   document.addEventListener('visibilitychange', () => {
     if (!audio || !started || state.muted) return;
     if (document.hidden) audio.pause();
@@ -72,6 +72,8 @@ export const music = {
   start(): void {
     if (!load()) return;
     started = true;
+    state.playing = !state.muted;
+    emit();
     if (!state.muted) void play();
   },
   toggle(): void {
@@ -80,6 +82,7 @@ export const music = {
     try { localStorage.setItem(MUTE_KEY, state.muted ? '1' : '0'); } catch { /* storage blocked */ }
     if (state.muted) ramp(0, () => audio?.pause());
     else if (started) void play();
+    state.playing = started && !state.muted;
     emit();
   },
 };
