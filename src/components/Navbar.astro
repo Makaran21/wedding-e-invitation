@@ -1,9 +1,9 @@
 ---
 /**
  * Compact dock at the bottom of the screen: one small icon per section, the one in view in gold.
- * A jump that skips more than two sections goes through a veil that blooms out of the icon, names
- * the section in gold, then opens on it in a circle growing from the same icon while the page glides
- * the last stretch into place; shorter ones just scroll. Appears once the invitation is open, slips away while scrolling down and comes
+ * A jump to a section more than two away goes through a veil: two doors close over the page, a
+ * title card names the section, and the doors part on it while the page glides the last stretch
+ * into place. Shorter jumps just scroll. Appears once the invitation is open, slips away while scrolling down and comes
  * back on the way up. PUBLIC_NAVBAR=false in .env turns it off, and PUBLIC_NAVBAR_POSITION puts it
  * on the right edge (default) or along the bottom (both read at build time).
  */
@@ -22,24 +22,44 @@ const ITEMS = [
 {enabled && (
   <nav class="dock" aria-label="Sections" data-dock data-pos={position}>
     {ITEMS.map((it) => (
-      <a href={`#${it.id}`} class="item" data-target={it.id} data-kh={it.kh} aria-label={`${it.kh} · ${it.en}`}>
+      <a href={`#${it.id}`} class="item" style={`--i:${ITEMS.indexOf(it)}`} data-target={it.id} data-kh={it.kh} data-en={it.en} aria-label={`${it.kh} · ${it.en}`}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" set:html={it.icon} />
       </a>
     ))}
   </nav>
   <div class="veil" data-veil aria-hidden="true">
+    <span class="veil-seam" data-veil-seam></span>
     <div class="veil-inner">
-      <svg class="veil-orn" viewBox="0 0 120 14"><path d="M4 7 H50 M70 7 H116" /><path d="M60 1.5 L65.5 7 L60 12.5 L54.5 7 Z" /></svg>
+      <!-- A gold medallion holding the section's icon; its outer ring draws itself in. -->
+      <div class="veil-medal" data-veil-medal>
+        <svg class="veil-ring" viewBox="0 0 72 72">
+          <circle class="veil-ring-draw" cx="36" cy="36" r="34" pathLength="1" />
+          <circle cx="36" cy="36" r="29.5" stroke-dasharray="0.6 3.2" />
+          <path d="M36 0.5 L38 2.5 L36 4.5 L34 2.5 Z M36 67.5 L38 69.5 L36 71.5 L34 69.5 Z" fill="currentColor" stroke="none" />
+        </svg>
+        <svg class="veil-icon" viewBox="0 0 24 24" data-veil-icon></svg>
+      </div>
       <span class="veil-name" data-veil-name></span>
-      <svg class="veil-orn" viewBox="0 0 120 14"><path d="M4 7 H50 M70 7 H116" /><path d="M60 1.5 L65.5 7 L60 12.5 L54.5 7 Z" /></svg>
+      <svg class="veil-orn" viewBox="0 0 160 14" data-veil-orn>
+        <path class="veil-orn-l" d="M74 7 H8" pathLength="1" />
+        <path class="veil-orn-r" d="M86 7 H152" pathLength="1" />
+        <circle cx="4" cy="7" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="156" cy="7" r="1.4" fill="currentColor" stroke="none" />
+        <path d="M80 1.5 L85.5 7 L80 12.5 L74.5 7 Z" />
+        <path d="M80 4.5 L82.5 7 L80 9.5 L77.5 7 Z" fill="currentColor" stroke="none" />
+      </svg>
+      <span class="veil-en" data-veil-en></span>
     </div>
   </div>
 )}
 
 <style>
+  /* Showing: the pill springs out, then its icons pop in one by one. Hiding: the icons shrink away
+     last first and the pill folds into a dot. */
   .dock {
-    --hide: translate(-50%, calc(100% + 30px));
+    --hide: translate(-50%, 0) scale(.25);
     --place: translate(-50%, 0);
+    --n: 6;
     /* Above the kbach rails (54), which it sits on when on the right. */
     position: fixed; z-index: 56; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     display: flex; align-items: center; gap: 1px; padding: 3px;
@@ -48,22 +68,35 @@ const ITEMS = [
     -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
     box-shadow: 0 10px 28px rgba(20, 2, 6, 0.45), inset 0 1px 0 rgba(244, 218, 155, 0.12);
     transform: var(--hide); opacity: 0; pointer-events: none;
-    transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 300ms ease;
+    transition: transform 260ms cubic-bezier(0.5, 0, 0.75, 0) 180ms, opacity 200ms ease 240ms;
   }
   /* On the right: a vertical pill over the kbach rail, in the middle of the screen. */
   .dock[data-pos='right'] {
-    --hide: translate(calc(100% + 24px), -50%);
+    --hide: translate(0, -50%) scale(.25);
     --place: translate(0, -50%);
     flex-direction: column; left: auto; bottom: auto; top: 50%;
     right: calc(max(0px, (100vw - var(--page-max)) / 2) + max(4px, (var(--rail) - 38px) / 2));
   }
-  .dock[data-show] { transform: var(--place); opacity: 1; pointer-events: auto; }
-  .dock[data-show][data-away] { transform: var(--hide); opacity: 0; pointer-events: none; }
+  .dock[data-show] {
+    transform: var(--place); opacity: 1; pointer-events: auto;
+    transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 160ms ease;
+  }
+  .dock[data-show][data-away] {
+    transform: var(--hide); opacity: 0; pointer-events: none;
+    transition: transform 260ms cubic-bezier(0.5, 0, 0.75, 0) 180ms, opacity 200ms ease 240ms;
+  }
 
   .item {
     display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
     color: var(--gold-pale); -webkit-tap-highlight-color: transparent;
-    transition: background-color 300ms ease, color 300ms ease;
+    transform: scale(0);
+    transition: background-color 300ms ease, color 300ms ease,
+      transform 160ms ease-in calc((var(--n) - 1 - var(--i)) * 30ms);
+  }
+  .dock[data-show]:not([data-away]) .item {
+    transform: none;
+    transition: background-color 300ms ease, color 300ms ease,
+      transform 420ms cubic-bezier(0.34, 1.8, 0.64, 1) calc(140ms + var(--i) * 45ms);
   }
   .item svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
   .item[aria-current] { color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold)); }
@@ -82,20 +115,39 @@ const ITEMS = [
     mask: url('/assets/damask-mask.png') center / 320px auto repeat;
   }
   .veil[data-on] { display: grid; }
-  /* The opening: a hole of radius --hole around the tapped icon (--hx, --hy) shows the section through. */
-  .veil[data-opening] {
-    -webkit-mask: radial-gradient(circle at var(--hx) var(--hy), transparent var(--hole), #000 calc(var(--hole) + 1px));
-    mask: radial-gradient(circle at var(--hx) var(--hy), transparent var(--hole), #000 calc(var(--hole) + 1px));
+  /* Where the doors meet, a line of gold flares as they close. */
+  .veil-seam {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; opacity: 0;
+    background: linear-gradient(180deg, rgba(244, 218, 155, 0), var(--gold-lt) 30%, #FFF5D2 50%, var(--gold-lt) 70%, rgba(244, 218, 155, 0));
+    box-shadow: 0 0 14px 3px rgba(244, 218, 155, 0.55);
   }
-  @property --hole { syntax: '<length>'; inherits: false; initial-value: 0px; }
-  /* Hidden until the veil has spread, then faded in by the script. */
-  .veil-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; opacity: 0; }
-  .veil-orn { width: 120px; height: 14px; fill: none; stroke: var(--gold-lt); stroke-width: 0.9; }
+  /* The title card. Hidden until the veil has spread; the script plays each piece in. */
+  .veil-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0; }
+  .veil-medal {
+    position: relative; width: 72px; height: 72px; display: grid; place-items: center; margin-bottom: 4px;
+    color: var(--gold-lt); border-radius: 50%;
+    background: radial-gradient(circle, rgba(244, 218, 155, 0.16), rgba(244, 218, 155, 0) 70%);
+  }
+  .veil-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; }
+  .veil-ring-draw { stroke-width: 1.1; stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-origin: center; }
+  .veil-ring circle:not(.veil-ring-draw) { stroke-width: 1; opacity: .7; stroke-linecap: round; }
+  .veil-icon {
+    width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px rgba(244, 218, 155, 0.6));
+  }
   .veil-name {
-    font-family: 'Moul', var(--kh-font); font-size: 26px; line-height: 2;
-    background: linear-gradient(180deg, #FFF5D2 0%, #F4DA9B 30%, #D9A441 55%, #A9721F 72%, #E9C674 88%, #FBE7B0 100%);
+    font-family: 'Moul', var(--kh-font); font-size: 28px; line-height: 1.9;
+    background:
+      linear-gradient(105deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 60%) 200% 0 / 300% 100% no-repeat,
+      linear-gradient(180deg, #FFF5D2 0%, #F4DA9B 30%, #D9A441 55%, #A9721F 72%, #E9C674 88%, #FBE7B0 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 1.5px 0 rgba(58, 8, 18, 0.85)) drop-shadow(0 0 12px rgba(217, 164, 65, 0.3));
+  }
+  .veil-orn { width: 160px; height: 14px; fill: none; stroke: var(--gold-lt); stroke-width: 0.9; color: var(--gold-lt); }
+  .veil-orn-l, .veil-orn-r { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .veil-en {
+    font-family: var(--en-font); font-size: 10px; letter-spacing: 0.42em; padding-left: 0.42em; text-transform: uppercase;
+    color: var(--gold-pale); opacity: .85;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -144,12 +196,49 @@ const ITEMS = [
 
     const veil = document.querySelector<HTMLElement>('[data-veil]');
     const veilName = document.querySelector<HTMLElement>('[data-veil-name]');
+    const veilEn = document.querySelector<HTMLElement>('[data-veil-en]');
+    const veilIcon = document.querySelector<SVGElement>('[data-veil-icon]');
+    const veilMedal = document.querySelector<HTMLElement>('[data-veil-medal]');
+    const veilOrn = document.querySelector<SVGElement>('[data-veil-orn]');
+
+    /** Plays the title card in: medallion turns in as its ring draws, the name rises with a glint,
+     *  the ornament draws outwards, the English name settles. Resolves when it has all landed. */
+    const playCard = (inner: HTMLElement) => {
+      const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+      const ring = veilMedal!.querySelector('.veil-ring-draw')!;
+      const lines = veilOrn!.querySelectorAll('.veil-orn-l, .veil-orn-r');
+      inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
+      const steps = [
+        veilMedal!.animate([
+          { transform: 'scale(.4) rotate(-70deg)', opacity: 0 },
+          { transform: 'scale(1.08) rotate(6deg)', opacity: 1, offset: 0.7 },
+          { transform: 'none', opacity: 1 },
+        ], { duration: 420, easing: ease, fill: 'forwards' }),
+        ring.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 480, easing: 'ease-in-out', fill: 'forwards' }),
+        veilName!.animate([
+          { opacity: 0, transform: 'translateY(14px)', filter: 'blur(5px) drop-shadow(0 1.5px 0 rgba(58,8,18,.85))' },
+          { opacity: 1, transform: 'none', filter: 'blur(0) drop-shadow(0 1.5px 0 rgba(58,8,18,.85))' },
+        ], { duration: 340, delay: 80, easing: ease, fill: 'forwards' }),
+        veilEn!.animate([
+          { opacity: 0, letterSpacing: '0.9em' },
+          { opacity: 0.85, letterSpacing: '0.42em' },
+        ], { duration: 380, delay: 130, easing: ease, fill: 'forwards' }),
+        ...Array.from(lines, (l) => l.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
+          duration: 360, delay: 140, easing: ease, fill: 'forwards',
+        })),
+      ];
+      // A white glint runs through the name once it has risen.
+      veilName!.animate([{ backgroundPosition: '200% 0, 0 0' }, { backgroundPosition: '-100% 0, 0 0' }], {
+        duration: 600, delay: 260, easing: 'ease-in-out',
+      });
+      return Promise.all(steps.map((s) => s.finished));
+    };
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    /** Skipping more sections than this, the jump goes through the veil instead of a long scroll. */
-    const MAX_SKIPPED = 2;
+    /** Jumping more sections away than this goes through the veil instead of a long scroll. */
+    const MAX_STEPS = 2;
     let veiling = false;
     /** Behind the veil the page lands this far short of the section, and glides the rest as it opens. */
-    const GLIDE_PX = 180;
+    const GLIDE_PX = 140;
 
     /** Scrolls from `from` to `to` over `ms`, easing out like the end of a long scroll. */
     const glide = (from: number, to: number, ms: number) => new Promise<void>((done) => {
@@ -164,45 +253,37 @@ const ITEMS = [
 
     /** Blooms the veil out of the tapped icon, names the section, jumps, then lifts the veil. */
     const veilTo = async (a: HTMLAnchorElement, target: HTMLElement) => {
-      if (!veil || !veilName) return;
+      if (!veil || !veilName || !veilEn || !veilIcon || !veilMedal || !veilOrn) return;
       veiling = true;
-      const icon = a.getBoundingClientRect();
-      const at = `${icon.left + icon.width / 2}px ${icon.top + icon.height / 2}px`;
       veilName.textContent = a.dataset.kh ?? '';
+      veilEn.textContent = a.dataset.en ?? '';
+      veilIcon.innerHTML = a.querySelector('svg')?.innerHTML ?? '';
       veil.setAttribute('data-on', '');
-      await veil.animate([
-        { clipPath: `circle(0% at ${at})` },
-        { clipPath: `circle(150% at ${at})` },
-      ], { duration: 650, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards' }).finished;
-      const inner = veil.firstElementChild as HTMLElement;
-      await inner.animate([
-        { opacity: 0, transform: 'translateY(10px) scale(.96)', filter: 'blur(4px)' },
-        { opacity: 1, transform: 'none', filter: 'none' },
-      ], { duration: 380, easing: 'ease-out', fill: 'forwards' }).finished;
+      // Close the doors: two panels from the sides meeting in the middle (one polygon, two halves).
+      const doors = (gap: string) => `polygon(0 0, ${gap} 0, ${gap} 100%, calc(100% - ${gap}) 100%, calc(100% - ${gap}) 0, 100% 0, 100% 100%, 0 100%)`;
+      await veil.animate([{ clipPath: doors('0%') }, { clipPath: doors('50%') }], {
+        duration: 340, easing: 'cubic-bezier(0.7, 0, 0.3, 1)', fill: 'forwards',
+      }).finished;
+      veil.querySelector('[data-veil-seam]')?.animate([{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 0 }], { duration: 520 });
+      const inner = veil.querySelector<HTMLElement>('.veil-inner')!;
+      await playCard(inner);
       // Land just short of the section, on the side we're coming from.
       const end = Math.min(target.getBoundingClientRect().top + window.scrollY, document.documentElement.scrollHeight - window.innerHeight);
       const down = end > window.scrollY;
       const landing = Math.max(0, end + (down ? -GLIDE_PX : GLIDE_PX));
       window.scrollTo({ top: landing, behavior: 'instant' });
-      await new Promise((done) => setTimeout(done, 200));
-      // Open on the section: a circle grows from the same icon until the veil is gone.
-      const x = icon.left + icon.width / 2;
-      const y = icon.top + icon.height / 2;
-      const reach = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-      veil.style.setProperty('--hx', `${x}px`);
-      veil.style.setProperty('--hy', `${y}px`);
-      veil.setAttribute('data-opening', '');
-      inner.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' });
+      await new Promise((done) => setTimeout(done, 90));
+      // Part the doors on the section while the page glides in.
+      inner.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.94)' }], { duration: 180, easing: 'ease-in', fill: 'forwards' });
       await Promise.all([
-        veil.animate([{ '--hole': '0px' }, { '--hole': `${reach}px` }], {
-          duration: 750, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
+        veil.animate([{ clipPath: doors('50%') }, { clipPath: doors('0%') }], {
+          duration: 460, delay: 80, easing: 'cubic-bezier(0.6, 0, 0.3, 1)', fill: 'forwards',
         }).finished,
-        glide(landing, end, 1100),
+        glide(landing, end, 700),
       ]);
       veil.removeAttribute('data-on');
-      veil.removeAttribute('data-opening');
-      veil.getAnimations().forEach((an) => an.cancel());
-      inner.getAnimations().forEach((an) => an.cancel());
+      // Reset every piece of the card for the next jump.
+      veil.getAnimations({ subtree: true }).forEach((an) => an.cancel());
       veiling = false;
       settleSoon(150);
     };
@@ -214,11 +295,11 @@ const ITEMS = [
         const target = document.getElementById(a.dataset.target!);
         if (!target || veiling) return;
         const from = items.findIndex((x) => x.hasAttribute('aria-current'));
-        const skipped = Math.abs(items.indexOf(a) - Math.max(0, from)) - 1;
+        const steps = Math.abs(items.indexOf(a) - Math.max(0, from));
         steering = true;
         mark(a.dataset.target!);
         dock.removeAttribute('data-away');
-        if (skipped > MAX_SKIPPED && !reduced) { void veilTo(a, target); return; }
+        if (steps > MAX_STEPS && !reduced) { void veilTo(a, target); return; }
         target.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
         settleSoon(400); // in case the page doesn't need to move at all
       });
