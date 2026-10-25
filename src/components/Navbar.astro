@@ -6,16 +6,12 @@
  * - Tap: nearby sections scroll into view. One more than two away goes through a veil: it blooms
  *   out of the icon, a title card names the section, then it opens in a circle from the same icon
  *   while the page glides the last stretch into place.
- * - Slide a finger along it to pick a section; the page waits, and letting go goes there like a tap.
+ * - Slide a finger along it: like holding a scrollbar, the page scrolls with the finger, no veil.
  * PUBLIC_NAVBAR=false in .env turns it off; PUBLIC_NAVBAR_POSITION=right|bottom places it (both
  * read at build time).
  */
-import { wedding } from '@/content/wedding';
-import { MONOGRAM_FALLBACK, monogramSrc } from '@/lib/monogram';
-
 const enabled = import.meta.env.PUBLIC_NAVBAR !== 'false';
 const position = import.meta.env.PUBLIC_NAVBAR_POSITION === 'bottom' ? 'bottom' : 'right';
-const mono = monogramSrc(wedding.settings.monogram)?.src ?? MONOGRAM_FALLBACK;
 
 /** The title card shown on a long jump uses each section's own heading, as written on the page. */
 const TITLES: Record<string, { kh: string; en: string }> = {
@@ -46,13 +42,8 @@ const ITEMS = [
   </nav>
   <div class="veil" data-veil aria-hidden="true">
     <div class="veil-inner">
-      <!-- A gold-framed plaque with kbach corners, like the envelope: monogram, ornament, heading. -->
+      <!-- The section's heading, as on the page: ornament, Khmer title, English line. -->
       <div class="veil-plaque" data-veil-plaque>
-        <svg class="veil-corner tl" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
-        <svg class="veil-corner tr" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
-        <svg class="veil-corner bl" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
-        <svg class="veil-corner br" viewBox="0 0 40 40"><use href="#kbachCorner" /></svg>
-        <img class="veil-mono" src={mono} alt="" data-veil-mono />
         <div class="veil-orn" data-veil-orn>
           <div class="pair"><div class="rule-fade-r l1"></div><div class="rule-fade-r l2"></div></div>
           <div class="gem"></div>
@@ -116,14 +107,8 @@ const ITEMS = [
   /* Sliding: the finger owns the dock (no page scroll), and the icon under it swells. */
   .dock { touch-action: none; }
   .dock[data-show][data-sliding] .item { transition: background-color 120ms ease, color 120ms ease, transform 160ms ease; }
-  /* While sliding, the icon under the finger is the gold one; the current section's steps back. */
-  .dock[data-show][data-sliding] .item[aria-current]:not([data-under]) { color: var(--gold-pale); background: transparent; }
-  .dock[data-show][data-sliding] .item[aria-current]:not([data-under]) svg { opacity: .75; }
-  .dock[data-show][data-sliding] .item[data-under] {
-    transform: scale(1.28); color: var(--wine-900); background: linear-gradient(180deg, #F8E3AE, var(--gold));
-    box-shadow: 0 0 14px rgba(244, 218, 155, 0.55);
-  }
-  .dock[data-show][data-sliding] .item[data-under] svg { opacity: 1; }
+  /* While sliding, the icon under the finger (the section in view) swells. */
+  .dock[data-show][data-sliding] .item[data-under] { transform: scale(1.28); box-shadow: 0 0 14px rgba(244, 218, 155, 0.55); }
   .item:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 2px; }
 
   /* The veil for long jumps: wine with a whisper of damask, the section's name in gold. */
@@ -148,17 +133,9 @@ const ITEMS = [
      plays each piece in. */
   .veil-inner { position: relative; opacity: 0; }
   .veil-plaque {
-    position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px;
-    min-width: 230px; max-width: calc(100vw - 80px); padding: 26px 30px 24px; box-sizing: border-box; text-align: center;
-    border: 1px solid var(--gold-a55); background: rgba(44, 5, 16, 0.35);
-    box-shadow: inset 0 0 0 4px rgba(44, 5, 16, 0.35), inset 0 0 0 5px var(--gold-a28), 0 14px 40px rgba(20, 2, 6, 0.4);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    max-width: calc(100vw - 80px); text-align: center;
   }
-  .veil-corner { position: absolute; width: 30px; height: 30px; }
-  .veil-corner.tl { left: 4px; top: 4px; }
-  .veil-corner.tr { right: 4px; top: 4px; transform: scaleX(-1); }
-  .veil-corner.bl { left: 4px; bottom: 4px; transform: scaleY(-1); }
-  .veil-corner.br { right: 4px; bottom: 4px; transform: scale(-1, -1); }
-  .veil-mono { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(217, 164, 65, 0.45)); }
   /* The double gold rules and diamond from the section headings. */
   .veil-orn { display: flex; align-items: center; gap: 12px; }
   .veil-orn .pair { display: flex; flex-direction: column; gap: 4px; }
@@ -212,8 +189,10 @@ const ITEMS = [
     // the screen); the next real scroll takes over again.
     const settleSoon = (ms: number) => {
       clearTimeout(quiet);
-      quiet = window.setTimeout(() => { steering = false; }, ms);
+      quiet = window.setTimeout(() => { if (!sliding) steering = false; }, ms);
     };
+    /** True while a finger is sliding along the dock. */
+    let sliding = false;
 
     const io = new IntersectionObserver((entries) => {
       if (steering) return;
@@ -225,11 +204,10 @@ const ITEMS = [
     const veilName = document.querySelector<HTMLElement>('[data-veil-name]');
     const veilEn = document.querySelector<HTMLElement>('[data-veil-en]');
     const veilPlaque = document.querySelector<HTMLElement>('[data-veil-plaque]');
-    const veilMono = document.querySelector<HTMLElement>('[data-veil-mono]');
     const veilOrn = document.querySelector<HTMLElement>('[data-veil-orn]');
 
-    /** Plays the title card in: the plaque settles, the monogram drops in, the rules draw out from
-     *  the diamond, the heading rises, the English settles. Resolves when it has all landed.
+    /** Plays the title card in: the rules draw out from the diamond, the heading rises, the English
+     *  settles. Resolves when it has all landed.
      *  `both`: delayed pieces stay hidden through their delay instead of showing, then snapping back. */
     const playCard = (inner: HTMLElement) => {
       const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
@@ -237,10 +215,6 @@ const ITEMS = [
       inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, fill: 'forwards' });
       const steps = [
         veilPlaque!.animate([{ transform: 'scale(.96)' }, { transform: 'none' }], { duration: 380, easing: ease, fill: 'both' }),
-        veilMono!.animate([
-          { opacity: 0, transform: 'translateY(-8px) scale(.85)' },
-          { opacity: 1, transform: 'none' },
-        ], { duration: 320, delay: 40, easing: ease, fill: 'both' }),
         ...Array.from(rules, (l) => l.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], {
           duration: 320, delay: 100, easing: ease, fill: 'both',
         })),
@@ -275,7 +249,7 @@ const ITEMS = [
 
     /** Blooms the veil out of the tapped icon, names the section, jumps, then lifts the veil. */
     const veilTo = async (a: HTMLAnchorElement, target: HTMLElement) => {
-      if (!veil || !veilName || !veilEn || !veilPlaque || !veilMono || !veilOrn) return;
+      if (!veil || !veilName || !veilEn || !veilPlaque || !veilOrn) return;
       veiling = true;
       const icon = a.getBoundingClientRect();
       const x = icon.left + icon.width / 2;
@@ -314,19 +288,40 @@ const ITEMS = [
       settleSoon(150);
     };
 
-    // Slide a finger along the dock to pick a section: the page stays put while the icon under the
-    // finger lights up; letting go goes there, just like tapping it.
+    // Slide a finger along the dock like holding a scrollbar's thumb: where the finger is maps
+    // straight to where the page is. Each icon's centre lines up with the top of its section, and
+    // in between the page sits in between, so the page moves exactly with the finger. No veil.
     // A tap stays a tap: the slide only starts once the finger has moved a little.
-    let slide: { id: number; x: number; y: number; on: boolean; at?: HTMLAnchorElement } | null = null;
+    let slide: { id: number; x: number; y: number; on: boolean } | null = null;
     let swallowClick = false;
     const vertical = dock.dataset.pos === 'right';
-    /** The icon nearest the finger along the dock (offset* ignore the swell, so icons don't shift). */
-    const itemAt = (x: number, y: number) => {
+    /** Icon centres along the dock and their sections' tops, measured as the slide starts. */
+    let stops: { at: number; top: number; item: HTMLAnchorElement }[] = [];
+    let frame = 0;
+    let pending = 0;
+
+    const measure = () => {
       const box = dock.getBoundingClientRect();
-      const p = vertical ? y - box.top : x - box.left;
-      const centre = (it: HTMLAnchorElement) => (vertical ? it.offsetTop + it.offsetHeight / 2 : it.offsetLeft + it.offsetWidth / 2);
-      return items.reduce((a, b) => (Math.abs(centre(b) - p) < Math.abs(centre(a) - p) ? b : a));
+      const maxTop = document.documentElement.scrollHeight - window.innerHeight;
+      // offset* ignore the swell transform, so the stops don't move as icons grow.
+      stops = items.map((item) => ({
+        item,
+        at: vertical ? box.top + item.offsetTop + item.offsetHeight / 2 : box.left + item.offsetLeft + item.offsetWidth / 2,
+        top: Math.min(maxTop, (document.getElementById(item.dataset.target!)?.getBoundingClientRect().top ?? 0) + window.scrollY),
+      }));
     };
+    /** The page position for a finger at `p` along the dock. */
+    const topFor = (p: number) => {
+      if (p <= stops[0].at) return stops[0].top;
+      const last = stops[stops.length - 1];
+      if (p >= last.at) return last.top;
+      const i = stops.findIndex((s, k) => p >= s.at && p < stops[k + 1].at);
+      const t = (p - stops[i].at) / (stops[i + 1].at - stops[i].at);
+      return stops[i].top + t * (stops[i + 1].top - stops[i].top);
+    };
+    /** The icon nearest the finger. */
+    const nearest = (p: number) => stops.reduce((a, b) => (Math.abs(b.at - p) < Math.abs(a.at - p) ? b : a)).item;
+
     dock.addEventListener('pointerdown', (e) => {
       if (veiling) return;
       slide = { id: e.pointerId, x: e.clientX, y: e.clientY, on: false };
@@ -336,27 +331,39 @@ const ITEMS = [
       if (!slide.on) {
         if (Math.hypot(e.clientX - slide.x, e.clientY - slide.y) < 8) return;
         slide.on = true;
+        sliding = true;
+        steering = true;
         dock.setPointerCapture(e.pointerId);
         dock.setAttribute('data-sliding', '');
+        measure();
       }
-      const it = itemAt(e.clientX, e.clientY);
-      if (it === slide.at) return;
-      slide.at = it;
-      items.forEach((x) => x.toggleAttribute('data-under', x === it));
-      navigator.vibrate?.(6);
+      pending = vertical ? e.clientY : e.clientX;
+      // One scroll per frame, at the finger's latest position.
+      if (!frame) {
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          window.scrollTo({ top: topFor(pending), behavior: 'instant' });
+          const it = nearest(pending);
+          if (!it.hasAttribute('data-under')) {
+            mark(it.dataset.target!);
+            items.forEach((x) => x.toggleAttribute('data-under', x === it));
+            navigator.vibrate?.(6);
+          }
+        });
+      }
     });
     const endSlide = (e: PointerEvent) => {
       if (!slide || e.pointerId !== slide.id) return;
-      const picked = slide.on && e.type === 'pointerup' ? slide.at : undefined;
       if (slide.on) {
+        sliding = false;
         items.forEach((x) => x.removeAttribute('data-under'));
-        dock.removeAttribute('data-sliding');
         // The click that may follow a slide isn't a tap (and may never come, so don't wait for it).
         swallowClick = true;
         setTimeout(() => { swallowClick = false; }, 300);
+        dock.removeAttribute('data-sliding');
+        settleSoon(200);
       }
       slide = null;
-      if (picked) go(picked);
     };
     dock.addEventListener('pointerup', endSlide);
     dock.addEventListener('pointercancel', endSlide);
