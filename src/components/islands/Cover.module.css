@@ -99,33 +99,30 @@
 .rise { animation: rise 1000ms var(--ease-out) var(--d, 0ms) both; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 
-/* Gold leaf lettering with a white glint that sweeps through now and then. Kept on an inner span:
-   the .rise entrance animates `filter` on the outer element, which would wipe the shadow here. */
-.metal {
-  background:
-    linear-gradient(105deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 60%) 200% 0 / 300% 100% no-repeat,
-    linear-gradient(180deg, #FFF5D2 0%, #F4DA9B 30%, #D9A441 55%, #A9721F 72%, #E9C674 88%, #FBE7B0 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 1.5px 0 rgba(58, 8, 18, 0.85)) drop-shadow(0 0 10px rgba(217, 164, 65, 0.25));
-  animation: glintText 7s ease-in-out 4.5s infinite;
-}
-@keyframes glintText { 0%, 70% { background-position: 200% 0, 0 0; } 90%, 100% { background-position: -100% 0, 0 0; } }
-
 .head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 40px; }
 .kicker {
-  font-family: var(--en-font); font-size: 9.5px; letter-spacing: 0.42em; text-transform: uppercase;
-  color: var(--gold-pale); opacity: .8; padding-left: 0.42em; /* balance the trailing letter-spacing */
+  display: flex; align-items: center; gap: 14px;
+  font-family: var(--en-font); font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--gold);
 }
-.kicker.rise { animation-name: riseLabel; }
-.title { margin: 0; font-family: 'Moul', var(--kh-font); font-weight: 400; font-size: 23px; line-height: 2; }
-.ornament { width: 200px; height: 14px; overflow: visible; }
-.couple { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 2px; }
-.coupleKh { display: flex; align-items: baseline; gap: 12px; font-family: var(--kh-font); font-size: 16px; line-height: 1.9; }
+.kicker > span { width: 38px; }
+.title {
+  margin: 0; font-family: var(--kh-font); font-weight: 400; font-size: 24px; line-height: 1.8; color: var(--gold-lt);
+  text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6), 0 0 18px rgba(217, 164, 65, 0.25);
+}
+/* The double rules and diamond from the section headings. */
+.ornament { display: flex; align-items: center; gap: 12px; }
+.pair { display: flex; flex-direction: column; gap: 4px; }
+.pair > span:first-child { width: 52px; }
+.pair > span:last-child { width: 30px; opacity: .57; }
+.pair:first-child > span:last-child { margin-left: auto; }
+.gem { width: 7px; height: 7px; transform: rotate(45deg); background: var(--gold); }
+.couple { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; }
+.coupleKh {
+  display: flex; align-items: baseline; gap: 12px;
+  font-family: var(--kh-font); font-size: 15px; line-height: 1.8; color: var(--gold-lt);
+}
 .amp { font-size: 12px; color: var(--gold); opacity: .85; }
-.coupleEn {
-  font-family: var(--en-font); font-style: italic; font-size: 11.5px; letter-spacing: 0.06em;
-  color: var(--gold-pale); opacity: .75;
-}
+.coupleEn { font-family: var(--en-font); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); }
 
 /* ---------- The envelope ---------- */
 
@@ -261,7 +258,10 @@
 .flank:last-child { transform: scaleX(-1); }
 .inviteLabel.rise { animation-name: riseLabel; }
 @keyframes riseLabel { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: .85; transform: none; filter: none; } }
-.guestName { margin-top: 6px; font-family: var(--kh-font); font-size: 21px; line-height: 1.8; }
+.guestName {
+  margin-top: 6px; font-family: var(--kh-font); font-size: 20px; line-height: 1.8; color: var(--gold-lt);
+  text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6);
+}
 
 .openWrap { margin-top: 30px; }
 /* Ornate gold frame: wine plate, gold double border, metallic label, passing glint. */
@@ -350,6 +350,5 @@
   .flare { animation: none; opacity: 1; }
   .glow { opacity: 1; }
   .inviteLabel { opacity: .85; }
-  .kicker { opacity: .8; }
-  .metal { animation: none; }
+
 }
