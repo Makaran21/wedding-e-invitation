@@ -2,7 +2,8 @@
 /**
  * Compact dock at the bottom of the screen: one small icon per section, the one in view in gold.
  * A jump that skips more than two sections goes through a veil that blooms out of the icon, names
- * the section in gold, then opens on it in a circle growing from the same icon; shorter ones just scroll. Appears once the invitation is open, slips away while scrolling down and comes
+ * the section in gold, then opens on it in a circle growing from the same icon while the page glides
+ * the last stretch into place; shorter ones just scroll. Appears once the invitation is open, slips away while scrolling down and comes
  * back on the way up. PUBLIC_NAVBAR=false in .env turns it off, and PUBLIC_NAVBAR_POSITION puts it
  * on the right edge (default) or along the bottom (both read at build time).
  */
@@ -146,6 +147,19 @@ const ITEMS = [
     /** Skipping more sections than this, the jump goes through the veil instead of a long scroll. */
     const MAX_SKIPPED = 2;
     let veiling = false;
+    /** Behind the veil the page lands this far short of the section, and glides the rest as it opens. */
+    const GLIDE_PX = 180;
+
+    /** Scrolls from `from` to `to` over `ms`, easing out like the end of a long scroll. */
+    const glide = (from: number, to: number, ms: number) => new Promise<void>((done) => {
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / ms);
+        window.scrollTo({ top: from + (to - from) * (1 - (1 - t) ** 3), behavior: 'instant' });
+        if (t < 1) requestAnimationFrame(step); else done();
+      };
+      requestAnimationFrame(step);
+    });
 
     /** Blooms the veil out of the tapped icon, names the section, jumps, then lifts the veil. */
     const veilTo = async (a: HTMLAnchorElement, target: HTMLElement) => {
@@ -164,8 +178,12 @@ const ITEMS = [
         { opacity: 0, transform: 'translateY(10px) scale(.96)', filter: 'blur(4px)' },
         { opacity: 1, transform: 'none', filter: 'none' },
       ], { duration: 380, easing: 'ease-out', fill: 'forwards' }).finished;
-      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: 'instant' });
-      await new Promise((done) => setTimeout(done, 220));
+      // Land just short of the section, on the side we're coming from.
+      const end = Math.min(target.getBoundingClientRect().top + window.scrollY, document.documentElement.scrollHeight - window.innerHeight);
+      const down = end > window.scrollY;
+      const landing = Math.max(0, end + (down ? -GLIDE_PX : GLIDE_PX));
+      window.scrollTo({ top: landing, behavior: 'instant' });
+      await new Promise((done) => setTimeout(done, 200));
       // Open on the section: a circle grows from the same icon until the veil is gone.
       const x = icon.left + icon.width / 2;
       const y = icon.top + icon.height / 2;
@@ -174,9 +192,12 @@ const ITEMS = [
       veil.style.setProperty('--hy', `${y}px`);
       veil.setAttribute('data-opening', '');
       inner.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' });
-      await veil.animate([{ '--hole': '0px' }, { '--hole': `${reach}px` }], {
-        duration: 750, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
-      }).finished;
+      await Promise.all([
+        veil.animate([{ '--hole': '0px' }, { '--hole': `${reach}px` }], {
+          duration: 750, easing: 'cubic-bezier(0.6, 0, 0.4, 1)', fill: 'forwards',
+        }).finished,
+        glide(landing, end, 1100),
+      ]);
       veil.removeAttribute('data-on');
       veil.removeAttribute('data-opening');
       veil.getAnimations().forEach((an) => an.cancel());
