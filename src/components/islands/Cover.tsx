@@ -91,7 +91,7 @@ export default function Cover() {
 
   useEffect(() => {
     setGuest(getGuestName());
-    showProgress('Intro', INTRO_MS);
+    showProgress(INTRO_MS);
   }, []);
   useGoldDust(dust, mounted && stage === 'idle');
 
@@ -120,7 +120,8 @@ export default function Cover() {
       setMounted(false);
       return;
     }
-    showProgress('Opening', HANDOFF_MS);
+    // One bar from the tap until Save the Date has finished building.
+    showProgress(HANDOFF_MS + SETTLE_MS);
     setStage('opening');
   };
 

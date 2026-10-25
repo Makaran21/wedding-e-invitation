@@ -213,7 +213,6 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
 
 <script>
   import { onOpened } from '@/lib/events';
-  import { showProgress } from '@/lib/progress';
 
   // Each digit sits in its own fixed-width reel; every countdown tick rolls the changed digits
   // up like an odometer.
@@ -286,7 +285,6 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
     if (day) show(day, day.dataset.day!, false);
     onOpened(() => {
       sec.classList.add('is-open');
-      showProgress('Save the Date', SETTLED_MS);
       const page = sec.closest<HTMLElement>('.page');
       if (page && !reduced) window.setTimeout(() => hintScroll(page), SETTLED_MS);
     });

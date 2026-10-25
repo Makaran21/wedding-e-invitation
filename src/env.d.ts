@@ -1,5 +1,5 @@
 interface ImportMetaEnv {
-  /** "true" shows a progress bar at the bottom of the screen while the main animations play. */
+  /** "false" hides the gold progress line along the bottom of the screen during the main animations. */
   readonly PUBLIC_ANIMATION_PROGRESS?: string;
 }
 

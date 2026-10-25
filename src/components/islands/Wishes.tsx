@@ -67,7 +67,7 @@ export default function Wishes() {
       const x = box.left + box.width / 2;
       const y = box.top + box.height / 2;
       setFlight({ x, y, dx: list.left + list.width / 2 - x, dy: list.top + 34 - y });
-      showProgress('Sending wish', SEND_MS);
+      showProgress(SEND_MS);
       setMessage('');
       landed = new Promise((done) => setTimeout(done, FLIGHT_MS - 80));
     }
