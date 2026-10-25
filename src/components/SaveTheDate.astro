@@ -263,16 +263,15 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
   /** How often the page nudges up to show there's more below, until the guest scrolls. */
   const HINT_EVERY_MS = 7000;
 
-  /** Bounces the section and the one after it up a little, hinting that the page scrolls. */
-  const hintScroll = (sec: HTMLElement) => {
-    const els = [sec, sec.nextElementSibling].filter((el): el is HTMLElement => el instanceof HTMLElement);
-    const nudge = () => els.forEach((el) => el.animate([
+  /** Bounces the whole page up a little, hinting that it scrolls. */
+  const hintScroll = (page: HTMLElement) => {
+    const nudge = () => page.animate([
       { transform: 'none' },
       { transform: 'translateY(-28px)', offset: 0.3 },
       { transform: 'none', offset: 0.55 },
       { transform: 'translateY(-10px)', offset: 0.72 },
       { transform: 'none' },
-    ], { duration: 2800, easing: 'ease-in-out' }));
+    ], { duration: 2800, easing: 'ease-in-out' });
     let timer = 0;
     const first = window.setTimeout(() => { nudge(); timer = window.setInterval(nudge, HINT_EVERY_MS); }, HINT_PAUSE_MS);
     const stop = () => { window.clearTimeout(first); window.clearInterval(timer); window.removeEventListener('scroll', stop); };
@@ -286,7 +285,8 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
     if (day) show(day, day.dataset.day!, false);
     onOpened(() => {
       sec.classList.add('is-open');
-      if (!reduced) window.setTimeout(() => hintScroll(sec), SETTLED_MS);
+      const page = sec.closest<HTMLElement>('.page');
+      if (page && !reduced) window.setTimeout(() => hintScroll(page), SETTLED_MS);
     });
   }
 
