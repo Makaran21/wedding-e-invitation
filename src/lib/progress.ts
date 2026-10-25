@@ -1,6 +1,6 @@
 /**
  * A gold-foil line along the very bottom of the screen that fills while one of the page's main
- * animations plays (the intro, opening into Save the Date, sending a wish), led by a glowing tip.
+ * animations plays (the intro, opening into Save the Date, sending a wish).
  * Part of the look; PUBLIC_ANIMATION_PROGRESS=false in .env turns it off (read at build time).
  */
 const enabled = import.meta.env.PUBLIC_ANIMATION_PROGRESS !== 'false';
@@ -18,16 +18,11 @@ const CSS = `
   box-shadow: 0 0 10px rgba(217, 164, 65, 0.6);
   animation: anim-progress-shimmer 1.6s linear infinite;
 }
-.anim-progress-tip {
-  position: absolute; top: 50%; left: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
-  background: radial-gradient(circle, #FFF8E0 0%, #F4DA9B 45%, rgba(217, 164, 65, 0) 75%);
-  box-shadow: 0 0 12px 4px rgba(244, 218, 155, 0.7);
-}
 @keyframes anim-progress-shimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .anim-progress-fill { animation: none; } }
 `;
 
-type Bar = { root: HTMLDivElement; fill: HTMLDivElement; tip: HTMLDivElement };
+type Bar = { root: HTMLDivElement; fill: HTMLDivElement };
 let bar: Bar | null = null;
 let raf = 0;
 let hide = 0;
@@ -42,18 +37,16 @@ function ensureBar(): Bar {
   root.setAttribute('aria-hidden', 'true');
   const fill = document.createElement('div');
   fill.className = 'anim-progress-fill';
-  const tip = document.createElement('div');
-  tip.className = 'anim-progress-tip';
-  root.append(fill, tip);
+  root.append(fill);
   document.body.append(root);
-  bar = { root, fill, tip };
+  bar = { root, fill };
   return bar;
 }
 
 /** Fills the line over `ms`. A new call replaces whatever is running. */
 export function showProgress(ms: number): void {
   if (!enabled) return;
-  const { root, fill, tip } = ensureBar();
+  const { root, fill } = ensureBar();
   cancelAnimationFrame(raf);
   clearTimeout(hide);
   root.classList.add('is-on');
@@ -61,7 +54,6 @@ export function showProgress(ms: number): void {
   const frame = (now: number) => {
     const t = Math.min(1, (now - start) / ms);
     fill.style.transform = `scaleX(${t})`;
-    tip.style.left = `${t * 100}%`;
     if (t < 1) raf = requestAnimationFrame(frame);
     else hide = window.setTimeout(() => root.classList.remove('is-on'), 500);
   };
