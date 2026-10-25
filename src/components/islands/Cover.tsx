@@ -6,14 +6,34 @@ import { monogramSrc } from '@/lib/monogram';
 import MonogramImage from './MonogramImage';
 import s from './Cover.module.css';
 
-/** Cover → (tap) content dissolves → gate seam and handles appear → doors swing open → unmount. */
-type Stage = 'idle' | 'leaving' | 'doors';
-const LEAVE_MS = 650;
-const DOORS_MS = 1500;
+/**
+ * A sealed invitation envelope. It drifts down onto the page, sways and settles, the wax seal stamps
+ * down, then the title, guest name and button appear, while shafts of light sweep across the pattern.
+ * On tap the seal breaks away, the flap opens and the card slides out in warm light, then comes
+ * up towards the guest as the envelope falls away and Save the Date builds behind it.
+ */
+type Stage = 'idle' | 'opening' | 'out';
+/** When Save the Date starts building: as the card begins to come forward. */
+const HANDOFF_MS = 1700;
+/** Lets the card finish fading before the cover unmounts. */
+const OUT_MS = 600;
+/** Scrolling stays locked until Save the Date has finished building (its last piece ends ~3.85s after hand-off). */
+const SETTLE_MS = 3900;
 
 const delay = (ms: number) => ({ '--d': `${ms}ms` }) as CSSProperties;
 
-/** Gold dust drifting up behind the cover content. Stops when the cover goes away. */
+/** Wax seal outline: a circle with a soft, uneven rim. */
+const SEAL_PATH = (() => {
+  const pts: string[] = [];
+  for (let i = 0; i <= 72; i++) {
+    const a = (i / 72) * Math.PI * 2;
+    const r = 46 + 1.6 * Math.sin(a * 9) + 0.9 * Math.sin(a * 23 + 1.3);
+    pts.push(`${(50 + r * Math.cos(a)).toFixed(2)} ${(50 + r * Math.sin(a)).toFixed(2)}`);
+  }
+  return `M${pts.join(' L')} Z`;
+})();
+
+/** Gold motes rising slowly behind the envelope. Stops when the cover goes away. */
 function useGoldDust(canvas: React.RefObject<HTMLCanvasElement | null>, running: boolean) {
   useEffect(() => {
     const el = canvas.current;
@@ -31,10 +51,10 @@ function useGoldDust(canvas: React.RefObject<HTMLCanvasElement | null>, running:
     resize();
     window.addEventListener('resize', resize);
 
-    const motes = Array.from({ length: 46 }, () => ({
+    const motes = Array.from({ length: 40 }, () => ({
       x: Math.random() * w, y: Math.random() * h,
-      r: 0.5 + Math.random() * 1.6,
-      vy: 0.12 + Math.random() * 0.35, vx: (Math.random() - 0.5) * 0.12,
+      r: 0.6 + Math.random() * 1.7,
+      vy: 0.1 + Math.random() * 0.3, vx: (Math.random() - 0.5) * 0.1,
       tw: Math.random() * Math.PI * 2, tws: 0.01 + Math.random() * 0.03,
     }));
 
@@ -44,9 +64,8 @@ function useGoldDust(canvas: React.RefObject<HTMLCanvasElement | null>, running:
       for (const m of motes) {
         m.y -= m.vy; m.x += m.vx; m.tw += m.tws;
         if (m.y < -4) { m.y = h + 4; m.x = Math.random() * w; }
-        const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(m.tw));
         ctx.beginPath();
-        ctx.fillStyle = `rgba(244, 218, 155, ${a})`;
+        ctx.fillStyle = `rgba(244, 218, 155, ${0.2 + 0.55 * (0.5 + 0.5 * Math.sin(m.tw))})`;
         ctx.shadowColor = 'rgba(217, 164, 65, 0.8)';
         ctx.shadowBlur = m.r * 4;
         ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
@@ -60,7 +79,7 @@ function useGoldDust(canvas: React.RefObject<HTMLCanvasElement | null>, running:
 }
 
 export default function Cover() {
-  const { couple, date, settings } = wedding;
+  const { couple, settings } = wedding;
   const [stage, setStage] = useState<Stage>('idle');
   const [mounted, setMounted] = useState(true);
   const [guest, setGuest] = useState(wedding.guestDefault);
@@ -68,21 +87,23 @@ export default function Cover() {
   const mono = monogramSrc(settings.monogram);
 
   useEffect(() => { setGuest(getGuestName()); }, []);
-  useGoldDust(dust, mounted);
+  useGoldDust(dust, mounted && stage === 'idle');
 
   useEffect(() => {
-    if (stage === 'idle') return;
-    if (stage === 'leaving') {
+    if (stage === 'opening') {
       const t = setTimeout(() => {
-        // Unlock and start the page's own reveal as the doors begin to part.
-        document.body.classList.remove('is-locked');
+        // The card is out: hand over to the page, which picks up from here.
+        // Not tied to this component, which unmounts long before the section settles.
+        window.setTimeout(() => document.body.classList.remove('is-locked'), SETTLE_MS);
         markOpened();
-        setStage('doors');
-      }, LEAVE_MS);
+        setStage('out');
+      }, HANDOFF_MS);
       return () => clearTimeout(t);
     }
-    const t = setTimeout(() => setMounted(false), DOORS_MS + 80);
-    return () => clearTimeout(t);
+    if (stage === 'out') {
+      const t = setTimeout(() => setMounted(false), OUT_MS);
+      return () => clearTimeout(t);
+    }
   }, [stage]);
 
   const open = () => {
@@ -93,88 +114,105 @@ export default function Cover() {
       setMounted(false);
       return;
     }
-    setStage('leaving');
+    setStage('opening');
   };
 
   if (!mounted) return null;
 
   return (
     <div className={s.cover} data-stage={stage} aria-hidden={stage !== 'idle' || undefined}>
-      <div className={s.doors} aria-hidden="true">
-        {(['left', 'right'] as const).map((side) => (
-          <div key={side} className={`${s.leaf} ${s[side]}`}>
-            <div className={s.leafPattern} />
-            <div className={s.leafPanel} />
-            <div className={s.leafEdge} />
-            <div className={s.handle}><span /></div>
-          </div>
-        ))}
-        <div className={s.beam} />
-      </div>
-
-      <div className={s.rays} aria-hidden="true">
-        <span className={s.flare} />
-        <span className={s.ray} style={delay(600)} />
-        <span className={`${s.ray} ${s.rayWide}`} style={delay(3600)} />
-        <span className={s.ray} style={delay(6800)} />
+      <div className={s.bg} aria-hidden="true">
+        <div className={s.damask} />
+        <div className={s.wave} />
+        <div className={s.shine}>
+          <span className={s.ray} style={delay(600)} />
+        </div>
+        <div className={s.rays}>
+          <span className={s.flare} />
+          <span className={s.ray} style={delay(600)} />
+        </div>
+        <div className={s.glow} />
       </div>
       <canvas ref={dust} className={s.dust} aria-hidden="true" />
-      {[[18, 22, 0], [82, 14, 1.2], [70, 46, 2.4], [12, 64, 3.1], [88, 78, 0.6], [30, 88, 1.8]].map(([x, y, t], i) => (
-        <span key={i} className={s.twinkle} style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${t}s` }} aria-hidden="true" />
-      ))}
-      <div className={`${s.rail} ${s.railLeft}`} aria-hidden="true" />
-      <div className={`${s.rail} ${s.railRight}`} aria-hidden="true" />
 
       <div className={s.content}>
-        <div className={`${s.title} ${s.rise}`} style={delay(200)}>
-          <span className={s.metal}>សិរីមង្គលអាពាហ៍ពិពាហ៍</span>
-        </div>
-
-        <div className={s.crest}>
-          <div className={s.halo} aria-hidden="true" />
-          <img className={s.crestFrame} src="/assets/monogram-crest-frame.png" alt="" aria-hidden="true" />
-          <div className={s.mono}>
-            {mono
-              ? <MonogramImage src={mono.src} className={mono.square ? s.sealImgSquare : s.sealImg} />
-              : <div className={s.sealText}>{couple.monogramKh}</div>}
+        <header className={s.head}>
+          <div className={`${s.title} ${s.rise}`} style={delay(2250)}>សិរីមង្គលអាពាហ៍ពិពាហ៍</div>
+          <div className={`${s.couple} ${s.rise}`} style={delay(2450)}>
+            <span>{couple.groom.kh}</span>
+            <span className={s.amp}>និង</span>
+            <span>{couple.bride.kh}</span>
           </div>
-        </div>
+        </header>
 
-        <div className={s.names}>
-          <h1 className={s.namesTitle}>
-            <span className={`${s.name} ${s.metal} ${s.wipe}`} style={delay(1600)}>{couple.groom.kh}</span>
-            <span className={s.amp}>
-              <span className={`${s.ampLine} ${s.ampL} rule-fade-r`} />
-              <span className={`${s.ampWord} ${s.rise}`} style={delay(1950)}>និង</span>
-              <span className={`${s.ampLine} ${s.ampR} rule-fade-l`} />
-            </span>
-            <span className={`${s.name} ${s.metal} ${s.wipe}`} style={delay(2150)}>{couple.bride.kh}</span>
-          </h1>
-          <div className={`${s.date} ${s.rise}`} style={delay(2550)}>{date.fullKh}</div>
+        {/* The seal sits beside the envelope, not in it, so its monogram outlives the envelope's fade. */}
+        <div className={s.stage}>
+          <div className={s.envelope} onClick={open} aria-hidden="true">
+            <div className={s.inside} />
+            <div className={s.card}>
+              {mono
+                ? <MonogramImage src={mono.src} className={s.cardMono} />
+                : <div className={s.monoText}>{couple.monogramKh}</div>}
+              <div className={s.cardLine} />
+              <div className={s.cardText}>សូមស្វាគមន៍</div>
+              <div className={s.cardLine} />
+            </div>
+            <div className={s.pocket} />
+            <svg className={s.lines} viewBox="0 0 290 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="cover-foil" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="#FFF1C4" />
+                  <stop offset=".3" stopColor="#D9A441" />
+                  <stop offset=".55" stopColor="#F4DA9B" />
+                  <stop offset=".8" stopColor="#A9721F" />
+                  <stop offset="1" stopColor="#F4DA9B" />
+                </linearGradient>
+              </defs>
+              <path className={s.draw} pathLength={1} d="M4.5 196.5 L145 112 L285.5 196.5" />
+              <rect className={`${s.draw} ${s.frame}`} pathLength={1} x="1" y="1" width="288" height="198" rx="13" />
+              <rect className={`${s.draw} ${s.frameIn}`} pathLength={1} x="8" y="8" width="274" height="184" rx="7" />
+            </svg>
+            <div className={s.flap}>
+              <div className={s.flapFace} />
+              <svg className={s.flapEdge} viewBox="0 0 290 116" preserveAspectRatio="none">
+                <path className={`${s.draw} ${s.flapFoil}`} pathLength={1} d="M4.5 3.5 L145 115 L285.5 3.5" />
+                <path className={`${s.draw} ${s.flapLace}`} pathLength={1} d="M14 1 L145 103 L276 1" />
+              </svg>
+            </div>
+            <div className={s.sheen} />
+          </div>
+          <div className={s.seal} onClick={open}>
+            <svg className={s.wax} viewBox="0 0 100 100">
+              <defs>
+                <radialGradient id="cover-wax" cx="38%" cy="32%" r="75%">
+                  <stop offset="0" stopColor="#C23A52" />
+                  <stop offset=".55" stopColor="#8E1B2E" />
+                  <stop offset="1" stopColor="#5A0E1D" />
+                </radialGradient>
+              </defs>
+              <path d={SEAL_PATH} fill="url(#cover-wax)" stroke="url(#cover-foil)" strokeWidth="2.2" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#F4DA9B" strokeOpacity=".7" strokeWidth=".9" />
+              <circle cx="50" cy="50" r="35.5" fill="none" stroke="#F4DA9B" strokeOpacity=".45" strokeWidth=".6" strokeDasharray="1 2.2" />
+              <circle cx="50" cy="50" r="32" fill="none" stroke="#3E0812" strokeOpacity=".35" strokeWidth="1.4" />
+            </svg>
+            <div className={s.mono}>
+              {mono
+                ? <MonogramImage src={mono.src} className={s.monoImg} />
+                : <div className={s.monoText}>{couple.monogramKh}</div>}
+            </div>
+          </div>
         </div>
 
         <div className={s.foot}>
-          <div className={`${s.guest} ${s.rise}`} style={delay(2800)}>
-            <div className={`${s.inviteLabel} ${s.metal}`}>សូមគោរពអញ្ជើញ</div>
-            {guest !== wedding.guestDefault && <div className={s.guestName}>{guest}</div>}
+          <div className={`${s.inviteLabel} ${s.rise}`} style={delay(2700)}>សូមគោរពអញ្ជើញ</div>
+          <div className={`${s.guestName} ${s.rise}`} style={delay(2850)}>
+            {guest !== wedding.guestDefault ? guest : 'លោក លោកស្រី អ្នកនាងកញ្ញា'}
           </div>
-          <svg className={s.divider} viewBox="0 0 260 12" width="240" height="12" aria-hidden="true">
-            <path className={s.dividerLine} pathLength={1} d="M14 6 H246" stroke="#D9A441" strokeWidth="0.8" />
-            <g className={s.dividerEnds} fill="none" stroke="#F4DA9B" strokeWidth="0.9">
-              <path d="M2 6 l5 -3.5 5 3.5 -5 3.5z" /><circle cx="17" cy="6" r="1.6" fill="#F4DA9B" />
-              <path d="M258 6 l-5 -3.5 -5 3.5 5 3.5z" /><circle cx="243" cy="6" r="1.6" fill="#F4DA9B" />
-              <path d="M130 2 l4 4 -4 4 -4 -4z" fill="#D9A441" />
-            </g>
-          </svg>
-          <div className={s.rise} style={delay(3300)}>
+          <div className={`${s.openWrap} ${s.rise}`} style={delay(3150)}>
             <button type="button" className={s.open} onClick={open}>
-              <svg className={`${s.openCurl} ${s.curlL}`} viewBox="0 0 16 28" width="14" height="26" aria-hidden="true">
-                <path d="M14 2 C6 4 3 9 3 14 C3 19 6 24 14 26 M9 14 C9 11 12 10 13 12" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-              </svg>
-              <span className={s.openKh}>ចុចដើម្បីបើកសំបុត្រ</span>
-              <svg className={`${s.openCurl} ${s.curlR}`} viewBox="0 0 16 28" width="14" height="26" aria-hidden="true">
-                <path d="M14 2 C6 4 3 9 3 14 C3 19 6 24 14 26 M9 14 C9 11 12 10 13 12" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-              </svg>
+              <span className={`${s.gem} ${s.gemTop}`} aria-hidden="true" />
+              <span className={`${s.gem} ${s.gemBottom}`} aria-hidden="true" />
+              <span className={s.openLabel}>បើកសំបុត្រ</span>
             </button>
           </div>
         </div>

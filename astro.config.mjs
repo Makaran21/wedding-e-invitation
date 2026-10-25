@@ -8,5 +8,7 @@ export default defineConfig({
   vite: {
     // MapLibre's worker is an ES module that imports a shared chunk.
     worker: { format: 'es' },
+    // Allow previewing the dev server through an ngrok or Cloudflare tunnel.
+    server: { allowedHosts: ['.ngrok-free.dev', '.trycloudflare.com'] },
   },
 });

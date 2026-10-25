@@ -1,6 +1,6 @@
 ---
 import Base from '@/layouts/Base.astro';
-import Cover from '@/components/islands/Cover';
+import Intro from '@/components/islands/Intro';
 import FallingLayer from '@/components/islands/FallingLayer';
 import SaveTheDate from '@/components/SaveTheDate.astro';
 import Letter from '@/components/Letter.astro';
@@ -15,7 +15,7 @@ import Footer from '@/components/Footer.astro';
 ---
 <Base>
   <FallingLayer client:idle />
-  <Cover client:load />
+  <Intro client:load />
   <SaveTheDate />
   <Letter />
   <CouplePhoto />

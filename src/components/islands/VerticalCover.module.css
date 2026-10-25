@@ -1,0 +1,280 @@
+.cover {
+  /* Space kept clear of the notch at the top, and of the home indicator plus
+     Safari's toolbar at the bottom (100lvh - 100dvh is the toolbar's height). */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: calc(env(safe-area-inset-bottom, 0px) + (100lvh - 100dvh));
+  --ease-out: cubic-bezier(0.16, 0.84, 0.28, 1);
+  --env-w: min(100%, 232px);
+
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  height: 100vh; height: 100lvh; /* reach under Safari's translucent toolbars */
+  width: 100%; max-width: var(--page-max); z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: calc(30px + var(--safe-top)) 36px calc(30px + var(--safe-bottom));
+  box-sizing: border-box;
+  overflow: clip; /* unlike hidden, can't be scrolled by focus/scrollIntoView */
+  background-color: var(--wine-900);
+  transition: background-color 900ms ease 700ms;
+}
+
+/* ---------- Background: deep wine, a whisper of damask, warm light behind the envelope ---------- */
+
+.bg { position: absolute; inset: 0; transition: opacity 900ms ease 700ms; }
+.bg::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(110% 75% at 50% 48%, #7A1A2C 0%, var(--wine-900) 55%, var(--wine-950) 100%);
+}
+.damask {
+  position: absolute; inset: 0; background: #A23447; opacity: .14;
+  -webkit-mask: url('/assets/damask-mask.png') center top / 320px auto repeat;
+  mask: url('/assets/damask-mask.png') center top / 320px auto repeat;
+}
+.glow {
+  position: absolute; left: 50%; top: 52%; width: 130%; aspect-ratio: 1; translate: -50% -50%;
+  background: radial-gradient(closest-side, rgba(244, 196, 120, 0.28), rgba(217, 164, 65, 0.08) 55%, rgba(217, 164, 65, 0) 100%);
+  opacity: 0; animation: fadeIn 1800ms ease-out 400ms forwards, breathe 6s ease-in-out 2200ms infinite;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+@keyframes breathe { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .7; scale: .94; } }
+.dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; animation: fadeIn 1600ms ease-out 800ms forwards; }
+
+/* ---------- Layout ---------- */
+
+.content {
+  position: relative; z-index: 2; width: 100%;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.rise { animation: rise 1000ms var(--ease-out) var(--d, 0ms) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+
+.head { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 34px; }
+.title {
+  font-family: var(--kh-font); font-size: 22px; line-height: 1.8; color: var(--gold-pale);
+  text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6), 0 0 18px rgba(217, 164, 65, 0.25);
+}
+.couple {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--kh-font); font-size: 13px; line-height: 1.8; color: var(--gold-lt); opacity: .9;
+}
+.amp { font-size: 11px; color: var(--gold); opacity: .8; }
+.couple.rise { animation-name: riseDim; }
+@keyframes riseDim { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: .9; transform: none; filter: none; } }
+
+/* ---------- The envelope ---------- */
+
+.stage { position: relative; width: var(--env-w); aspect-ratio: 232 / 330; }
+.envelope {
+  position: relative; width: 100%; height: 100%; cursor: pointer;
+  perspective: 1000px;
+  filter: drop-shadow(0 18px 26px rgba(20, 2, 6, 0.55));
+  animation: envIn 1100ms var(--ease-out) 600ms both;
+  -webkit-tap-highlight-color: transparent;
+}
+@keyframes envIn { from { opacity: 0; transform: translateY(40px) scale(.96); } to { opacity: 1; transform: none; } }
+
+/* The inside, seen once the flap opens: dark, then lit warm as the card comes out. */
+.inside {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, #3A0713, #4E0D1C);
+}
+.inside::after {
+  content: ''; position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(70% 90% at 50% 30%, rgba(255, 226, 170, 0.9), rgba(255, 200, 130, 0) 75%);
+}
+
+.card {
+  position: absolute; left: 8%; right: 8%; top: 5%; height: 90%; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; padding-top: 22px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--cream) 60%, var(--paper-dk) 100%);
+  box-shadow: inset 0 0 0 1px rgba(217, 164, 65, 0.6), inset 0 0 0 4px var(--paper), inset 0 0 0 5px rgba(217, 164, 65, 0.35);
+}
+.cardText { font-family: var(--kh-font); font-size: 13px; line-height: 1.8; color: var(--wine-700); }
+.cardLine { width: 40px; height: 1px; background: linear-gradient(to right, rgba(217, 164, 65, 0), var(--gold), rgba(217, 164, 65, 0)); }
+
+/* The front pocket: the whole face except a V notch at the top, which the flap covers. */
+.pocket {
+  position: absolute; inset: 0; z-index: 3;
+  clip-path: polygon(0 0, 50% 47%, 100% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg, var(--wine-700) 0%, var(--wine-800) 100%);
+}
+/* Embossed damask on the paper, a shade lighter than the wine. */
+.pocket::after, .flapFace::after {
+  content: ''; position: absolute; inset: 0; background: #C24A60; opacity: .2;
+  -webkit-mask: url('/assets/damask-mask.png') center top / 150px auto repeat;
+  mask: url('/assets/damask-mask.png') center top / 150px auto repeat;
+}
+.lines { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.lines path { fill: none; stroke: rgba(244, 218, 155, 0.35); stroke-width: 0.8; }
+.lines .frame { fill: none; stroke: url(#cover-foil); stroke-width: 2.2; }
+.lines .frameIn { fill: none; stroke: rgba(244, 218, 155, 0.6); stroke-width: 0.7; stroke-dasharray: none; }
+
+/* The guest's name, written on the front like an address, inside a gold cartouche. */
+.address {
+  position: absolute; left: 13%; right: 13%; top: 67%; z-index: 4;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 8px 9px; text-align: center;
+  border: 1px solid rgba(244, 218, 155, 0.55);
+  box-shadow: inset 0 0 0 3px rgba(122, 20, 38, 0.6), inset 0 0 0 4px rgba(244, 218, 155, 0.25);
+  background: linear-gradient(180deg, rgba(58, 7, 19, 0.35), rgba(58, 7, 19, 0.15));
+}
+.address::before, .address::after {
+  content: ''; position: absolute; left: 50%; width: 6px; height: 6px; margin-left: -3px;
+  background: var(--gold-lt); transform: rotate(45deg); box-shadow: 0 0 5px rgba(244, 218, 155, 0.6);
+}
+.address::before { top: -3.5px; }
+.address::after { bottom: -3.5px; }
+.address .inviteLabel { font-size: 11px; }
+.address .guestName { margin-top: 0; font-size: 16px; line-height: 1.7; }
+.cover:not([data-stage='idle']) .address { animation: away 500ms ease forwards; }
+
+/* Gold lines draw themselves in as the envelope arrives. */
+.draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1400ms cubic-bezier(0.65, 0, 0.35, 1) 900ms forwards; vector-effect: non-scaling-stroke; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* The flap: starts open, folds shut, then the seal stamps it closed. */
+.flap {
+  position: absolute; left: 0; right: 0; top: 0; height: 49%; z-index: 5;
+  transform-origin: top center; transform-style: preserve-3d;
+  animation: flapShut 900ms cubic-bezier(0.55, 0, 0.3, 1) 1150ms both;
+}
+@keyframes flapShut {
+  0% { transform: rotateX(180deg); z-index: 1; }
+  50% { z-index: 5; }
+  100% { transform: rotateX(0deg); z-index: 5; }
+}
+.flapFace {
+  position: absolute; inset: 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg, #9A1E33 0%, var(--wine-700) 70%, #7A1426 100%);
+}
+.flapEdge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.flapEdge path { fill: none; }
+.flapFoil { stroke: url(#cover-foil); stroke-width: 2.4; filter: drop-shadow(0 2px 2px rgba(30, 3, 9, 0.5)); }
+/* Lace: a fine dotted gold line just inside the flap's edge. */
+.flapLace { stroke: #F4DA9B; stroke-opacity: .75; stroke-width: 1.4; stroke-linecap: round; }
+.cover .flapLace { stroke-dasharray: 0.004 0.012; stroke-dashoffset: 0; animation: fadeIn 900ms ease 1700ms both; }
+
+/* A soft band of light glides over the closed envelope now and then. */
+.sheen { position: absolute; inset: 0; z-index: 6; overflow: hidden; pointer-events: none; }
+.sheen::after {
+  content: ''; position: absolute; top: -20%; bottom: -20%; width: 40%; left: -60%;
+  background: linear-gradient(100deg, rgba(255, 236, 200, 0) 0%, rgba(255, 236, 200, 0.16) 50%, rgba(255, 236, 200, 0) 100%);
+  animation: sheen 6.5s ease-in-out 3200ms infinite;
+}
+@keyframes sheen { 0%, 55% { left: -60%; } 90%, 100% { left: 130%; } }
+
+/* The wax seal at the flap's tip. */
+.seal {
+  position: absolute; left: 50%; top: 49%; z-index: 7; width: 88px; aspect-ratio: 1; cursor: pointer;
+  translate: -50% -50%;
+  display: grid; place-items: center;
+  animation: stamp 700ms cubic-bezier(0.3, 0, 0.2, 1.35) 2350ms both;
+}
+@keyframes stamp {
+  0% { opacity: 0; transform: scale(1.9); filter: blur(3px); }
+  70% { opacity: 1; filter: none; }
+  100% { opacity: 1; transform: scale(1); }
+}
+.wax { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 3px 4px rgba(20, 2, 6, 0.55)); }
+.mono { position: relative; width: 52%; }
+.monoImg {
+  display: block; width: 100%; height: auto; pointer-events: none;
+  filter: drop-shadow(0 1px 0 rgba(58, 8, 18, 0.85)) drop-shadow(0 0 6px rgba(217, 164, 65, 0.35));
+}
+.monoText { font-family: var(--kh-font); font-size: 20px; color: var(--gold-lt); line-height: 1.4; }
+
+/* ---------- Guest and button ---------- */
+
+.foot { display: flex; flex-direction: column; align-items: center; margin-top: 34px; }
+.inviteLabel { font-family: var(--kh-font); font-size: 12px; line-height: 1.8; color: var(--gold-pale); opacity: .85; }
+.inviteLabel.rise { animation-name: riseLabel; }
+@keyframes riseLabel { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: .85; transform: none; filter: none; } }
+.guestName {
+  margin-top: 8px; font-family: var(--kh-font); font-size: 19px; line-height: 1.8; color: var(--gold-lt);
+  text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6);
+}
+
+.openWrap { margin-top: 0; }
+/* Ornate gold frame: wine plate, gold double border, metallic label, passing glint. */
+.open {
+  position: relative; cursor: pointer;
+  display: inline-flex; align-items: center;
+  padding: 10px 34px 9px; border: 1px solid var(--gold); border-radius: 3px;
+  background: linear-gradient(180deg, #7A1A2C 0%, var(--wine-900) 55%, #45091A 100%);
+  box-shadow:
+    inset 0 0 0 3px var(--wine-900), inset 0 0 0 4px rgba(244, 218, 155, 0.55),
+    0 8px 22px rgba(20, 2, 6, 0.5), 0 0 18px rgba(217, 164, 65, 0.25);
+  animation: pulse 2600ms ease-in-out 4200ms infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+.open::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 240, 200, 0) 35%, rgba(255, 240, 200, 0.35) 50%, rgba(255, 240, 200, 0) 65%) 0 0 / 300% 100% no-repeat;
+  background-position: 120% 0;
+  animation: glint 3800ms ease-in-out 4000ms infinite;
+}
+@keyframes glint { 0%, 50% { background-position: 120% 0; } 85%, 100% { background-position: -20% 0; } }
+@keyframes pulse {
+  0%, 100% { box-shadow: inset 0 0 0 3px var(--wine-900), inset 0 0 0 4px rgba(244, 218, 155, 0.55), 0 8px 22px rgba(20, 2, 6, 0.5), 0 0 14px rgba(217, 164, 65, 0.2); }
+  50% { box-shadow: inset 0 0 0 3px var(--wine-900), inset 0 0 0 4px rgba(244, 218, 155, 0.75), 0 8px 22px rgba(20, 2, 6, 0.5), 0 0 26px rgba(217, 164, 65, 0.5); }
+}
+.openLabel {
+  font-family: var(--kh-font); font-size: 15px; line-height: 1.8; letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #FFF5D2 0%, #F4DA9B 35%, #D9A441 65%, #F4DA9B 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.gem {
+  position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px;
+  background: var(--gold-lt); transform: rotate(45deg); box-shadow: 0 0 6px rgba(244, 218, 155, 0.7);
+}
+.gemTop { top: -4px; }
+.gemBottom { bottom: -4px; }
+.open:active { transform: scale(.97); }
+.open:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 5px; }
+
+/* ---------- Opening: wax breaks, flap lifts, card slides out in warm light, monogram flies on ---------- */
+
+.cover:not([data-stage='idle']) { background-color: transparent; pointer-events: none; }
+.cover:not([data-stage='idle']) .bg { opacity: 0; }
+.cover:not([data-stage='idle']) .dust { opacity: 0; transition: opacity 600ms ease; animation: none; }
+.cover:not([data-stage='idle']) :is(.head, .foot) { animation: away 600ms ease forwards; }
+.cover:not([data-stage='idle']) .foot { animation-delay: 0ms; }
+.cover:not([data-stage='idle']) .head { animation-delay: 120ms; }
+@keyframes away { to { opacity: 0; transform: translateY(-8px); filter: blur(6px); } }
+
+.cover:not([data-stage='idle']) .wax { animation: crack 520ms cubic-bezier(0.4, 0, 1, 1) 120ms forwards; }
+@keyframes crack {
+  0% { transform: scale(1); opacity: 1; }
+  30% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(.6) rotate(-14deg); opacity: 0; filter: blur(2px) drop-shadow(0 3px 4px rgba(20, 2, 6, 0.55)); }
+}
+.cover:not([data-stage='idle']) .sheen { display: none; }
+
+.cover:not([data-stage='idle']) .flap { animation: flapOpen 700ms cubic-bezier(0.55, 0, 0.3, 1) 350ms both; }
+@keyframes flapOpen {
+  0% { transform: rotateX(0deg); z-index: 5; }
+  50% { z-index: 1; }
+  100% { transform: rotateX(180deg); z-index: 1; }
+}
+.cover:not([data-stage='idle']) .inside::after { animation: fadeIn 700ms ease-out 650ms forwards; }
+.cover:not([data-stage='idle']) .card { animation: cardOut 800ms cubic-bezier(0.3, 0, 0.2, 1) 750ms both; }
+@keyframes cardOut {
+  from { transform: none; box-shadow: inset 0 0 0 1px rgba(217, 164, 65, 0.6), inset 0 0 0 4px var(--paper), inset 0 0 0 5px rgba(217, 164, 65, 0.35); }
+  to { transform: translateY(-62%); box-shadow: inset 0 0 0 1px rgba(217, 164, 65, 0.6), inset 0 0 0 4px var(--paper), inset 0 0 0 5px rgba(217, 164, 65, 0.35), 0 0 40px rgba(255, 220, 160, 0.7); }
+}
+/* Then the whole envelope dissolves into the page. */
+.cover:not([data-stage='idle']) .envelope { animation: envOut 600ms ease 1150ms forwards; filter: none; }
+@keyframes envOut { from { opacity: 1; } to { opacity: 0; transform: scale(1.04); } }
+.cover[data-stage='out'] .mono { opacity: 0; transition: opacity 200ms ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .envelope, .flap, .seal, .glow, .dust, .open, .open::after, .sheen::after, .cover .flapLace { animation: none; }
+  .draw { animation: none; stroke-dashoffset: 0; }
+  .glow { opacity: 1; }
+  .couple { opacity: .9; }
+  .inviteLabel { opacity: .85; }
+}

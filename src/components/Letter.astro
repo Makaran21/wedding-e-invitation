@@ -4,7 +4,6 @@ const { couple, parents, parentsEn, letter } = wedding;
 ---
 <section id="letter" class="letter">
   <div class="paper">
-    <div class="grid" aria-hidden="true"></div>
     <div data-reveal class="body">
       <h2 class="kh heading">សិរីមង្គលអាពាហ៍ពិពាហ៍</h2>
 
@@ -64,11 +63,6 @@ const { couple, parents, parentsEn, letter } = wedding;
 <style>
   .letter { position: relative; background: var(--wine-800); padding: 0 var(--inset); }
   .paper { position: relative; overflow: hidden; background: radial-gradient(120% 90% at 50% 18%, var(--paper) 0%, var(--cream) 46%, var(--paper-dk) 100%); }
-  .grid {
-    position: absolute; inset: 0; opacity: .5;
-    background: repeating-linear-gradient(90deg, rgba(142,27,46,0.05) 0 1px, transparent 1px 26px),
-                repeating-linear-gradient(0deg, rgba(142,27,46,0.04) 0 1px, transparent 1px 26px);
-  }
   .body {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center;
     max-width: 520px; margin: 0 auto; padding: 60px 8px 56px;
@@ -80,8 +74,8 @@ const { couple, parents, parentsEn, letter } = wedding;
   .couple { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; width: 100%; padding: 4px 18px 0; }
   .couple > .who:first-child { justify-self: start; }
   .couple > .who:last-child { justify-self: end; }
-  /* Groom · ជាគូនឹង · bride, with the same gap on each side of ជាគូនឹង. */
-  .couple.kh-row { display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
+  /* Groom · ជាគូនឹង · bride, pushed out to the same edges as the English names below. */
+  .couple.kh-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
   .pair { font-size: 12.5px; color: var(--rose); line-height: 1.6; padding-bottom: 4px; }
   .who { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .role { font-size: 11px; color: var(--rust); letter-spacing: 0.04em; }

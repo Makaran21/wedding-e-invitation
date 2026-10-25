@@ -34,6 +34,8 @@ export interface Settings {
   mapStyle: MapStyle;
   /** Keep the page covered (and unscrollable) until the guest taps "Open invitation". */
   lockUntilOpened: boolean;
+  /** Which opening cover to show. A link can override it to compare: ?intro=vertical, ?intro=envelope or ?intro=lotus. */
+  intro: 'Vertical' | 'Envelope' | 'Lotus';
 }
 
 export interface WeddingContent {
@@ -162,5 +164,6 @@ export const wedding: WeddingContent = {
     dateMonogram: 'Khmer card mark',
     mapStyle: 'Dark matter',
     lockUntilOpened: true,
+    intro: 'Envelope',
   },
 };

@@ -1,0 +1,184 @@
+.cover {
+  /* Space kept clear of the notch at the top, and of the home indicator plus
+     Safari's toolbar at the bottom (100lvh - 100dvh is the toolbar's height). */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: calc(env(safe-area-inset-bottom, 0px) + (100lvh - 100dvh));
+  --ease-out: cubic-bezier(0.16, 0.84, 0.28, 1);
+
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  height: 100vh; height: 100lvh; /* reach under Safari's translucent toolbars */
+  width: 100%; max-width: var(--page-max); z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: calc(30px + var(--safe-top)) 32px calc(30px + var(--safe-bottom));
+  box-sizing: border-box;
+  overflow: clip; /* unlike hidden, can't be scrolled by focus/scrollIntoView */
+  background-color: var(--wine-900);
+  transition: background-color 900ms ease 650ms;
+}
+
+.bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(80% 50% at 50% 50%, rgba(170, 39, 64, 0.55) 0%, rgba(170, 39, 64, 0) 70%),
+    radial-gradient(120% 90% at 50% 45%, var(--wine-800) 0%, var(--wine-900) 55%, var(--wine-950) 100%);
+  transition: opacity 900ms ease 650ms;
+}
+.dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; animation: fadeIn 1600ms ease-out 800ms forwards; }
+@keyframes fadeIn { to { opacity: 1; } }
+
+.content {
+  position: relative; z-index: 2; width: 100%;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.rise { animation: rise 1000ms var(--ease-out) var(--d, 0ms) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+
+.head { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 26px; }
+.title {
+  font-family: var(--kh-font); font-size: 22px; line-height: 1.8; color: var(--gold-pale);
+  text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6), 0 0 18px rgba(217, 164, 65, 0.25);
+}
+.couple {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--kh-font); font-size: 13px; line-height: 1.8; color: var(--gold-lt);
+}
+.amp { font-size: 11px; color: var(--gold); opacity: .8; }
+
+/* ---------- The lotus ---------- */
+
+.lotus { position: relative; width: min(100%, 300px); aspect-ratio: 300 / 200; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+/* A slow golden sunburst turning behind the bloom. */
+.sunburst {
+  position: absolute; left: 50%; top: 52%; width: 170%; aspect-ratio: 1; translate: -50% -50%; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(244, 218, 155, 0.16) 0deg 4deg, rgba(244, 218, 155, 0) 4deg 15deg);
+  -webkit-mask: radial-gradient(closest-side, #000 15%, rgba(0, 0, 0, 0.5) 45%, transparent 100%);
+  mask: radial-gradient(closest-side, #000 15%, rgba(0, 0, 0, 0.5) 45%, transparent 100%);
+  opacity: 0;
+  animation: fadeIn 1800ms ease-out 1200ms forwards, turn 90s linear infinite;
+}
+@keyframes turn { to { rotate: 360deg; } }
+.halo {
+  position: absolute; left: 50%; top: 46%; width: 70%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 228, 170, 0.55), rgba(217, 164, 65, 0.15) 55%, rgba(217, 164, 65, 0) 100%);
+  opacity: 0; animation: fadeIn 1400ms ease-out 1500ms forwards, glow 5s ease-in-out 3000ms infinite;
+}
+@keyframes glow { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .65; scale: .92; } }
+
+.petals { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 6px rgba(30, 3, 9, 0.45)); }
+.petals.front { z-index: 3; }
+/* Each petal pivots at the lotus base and blooms from closed (upright) out to its angle. */
+.petal {
+  transform-box: view-box; transform-origin: 150px 180px;
+  transform: rotate(var(--a));
+  animation: bloom 1500ms cubic-bezier(0.2, 0.8, 0.25, 1) var(--d, 0ms) both;
+}
+.petal path:first-child { stroke: #FBE7B0; stroke-opacity: .55; stroke-width: .8; }
+.vein { fill: none; stroke: rgba(110, 66, 16, 0.45); stroke-width: .8; }
+@keyframes bloom {
+  from { opacity: 0; transform: rotate(calc(var(--a) * 0.08)) scale(.55); }
+  to { opacity: 1; transform: rotate(var(--a)) scale(1); }
+}
+
+/* The monogram rises out of the heart of the lotus. */
+.mono {
+  position: absolute; z-index: 2; left: 50%; top: 4%; width: 32%; margin-left: -16%;
+  animation: emerge 1400ms var(--ease-out) 1500ms both;
+}
+@keyframes emerge { from { opacity: 0; transform: translateY(30px) scale(.7); filter: blur(6px) brightness(1.6); } to { opacity: 1; transform: none; filter: none; } }
+.monoImg {
+  display: block; width: 100%; height: auto; pointer-events: none;
+  filter: drop-shadow(0 2px 0 rgba(58, 8, 18, 0.85)) drop-shadow(0 0 14px rgba(255, 220, 150, 0.5));
+}
+.monoText { font-family: var(--kh-font); font-size: 34px; color: var(--gold-lt); line-height: 1.4; }
+
+/* A thin gold waterline under the lotus, with a diamond at its centre. */
+.base {
+  position: absolute; z-index: 4; left: 8%; right: 8%; top: 90%; height: 1px;
+  background: linear-gradient(to right, rgba(217, 164, 65, 0), var(--gold) 30%, var(--gold-lt) 50%, var(--gold) 70%, rgba(217, 164, 65, 0));
+  transform: scaleX(0); animation: grow 1200ms var(--ease-out) 600ms forwards;
+}
+.base span {
+  position: absolute; left: 50%; top: 0; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+  background: var(--gold-lt); transform: rotate(45deg); box-shadow: 0 0 8px rgba(244, 218, 155, 0.8);
+}
+@keyframes grow { to { transform: scaleX(1); } }
+
+/* ---------- Guest and button ---------- */
+
+.foot { display: flex; flex-direction: column; align-items: center; margin-top: 34px; }
+.inviteLabel { font-family: var(--kh-font); font-size: 12px; line-height: 1.8; color: var(--gold-pale); opacity: .85; }
+.inviteLabel.rise { animation-name: riseLabel; }
+@keyframes riseLabel { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: .85; transform: none; filter: none; } }
+.guestName {
+  margin-top: 8px; font-family: var(--kh-font); font-size: 19px; line-height: 1.8; color: var(--gold-lt);
+  text-shadow: 0 2px 0 rgba(44, 5, 16, 0.6);
+}
+
+.openWrap { margin-top: 30px; }
+/* Ornate gold frame: wine plate, gold double border, metallic label, passing glint. */
+.open {
+  position: relative; cursor: pointer;
+  display: inline-flex; align-items: center;
+  padding: 10px 34px 9px; border: 1px solid var(--gold); border-radius: 3px;
+  background: linear-gradient(180deg, #7A1A2C 0%, var(--wine-900) 55%, #45091A 100%);
+  box-shadow:
+    inset 0 0 0 3px var(--wine-900), inset 0 0 0 4px rgba(244, 218, 155, 0.55),
+    0 8px 22px rgba(20, 2, 6, 0.5), 0 0 18px rgba(217, 164, 65, 0.25);
+  animation: pulse 2600ms ease-in-out 4000ms infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+.open::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 240, 200, 0) 35%, rgba(255, 240, 200, 0.35) 50%, rgba(255, 240, 200, 0) 65%) 0 0 / 300% 100% no-repeat;
+  background-position: 120% 0;
+  animation: glint 3800ms ease-in-out 3800ms infinite;
+}
+@keyframes glint { 0%, 50% { background-position: 120% 0; } 85%, 100% { background-position: -20% 0; } }
+@keyframes pulse {
+  0%, 100% { box-shadow: inset 0 0 0 3px var(--wine-900), inset 0 0 0 4px rgba(244, 218, 155, 0.55), 0 8px 22px rgba(20, 2, 6, 0.5), 0 0 14px rgba(217, 164, 65, 0.2); }
+  50% { box-shadow: inset 0 0 0 3px var(--wine-900), inset 0 0 0 4px rgba(244, 218, 155, 0.75), 0 8px 22px rgba(20, 2, 6, 0.5), 0 0 26px rgba(217, 164, 65, 0.5); }
+}
+.openLabel {
+  font-family: var(--kh-font); font-size: 15px; line-height: 1.8; letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #FFF5D2 0%, #F4DA9B 35%, #D9A441 65%, #F4DA9B 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.gem {
+  position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px;
+  background: var(--gold-lt); transform: rotate(45deg); box-shadow: 0 0 6px rgba(244, 218, 155, 0.7);
+}
+.gemTop { top: -4px; }
+.gemBottom { bottom: -4px; }
+.open:active { transform: scale(.97); }
+.open:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 5px; }
+
+/* ---------- Opening: the lotus opens wide and lets its petals fall; the monogram flies on ---------- */
+
+.cover:not([data-stage='idle']) { background-color: transparent; pointer-events: none; }
+.cover:not([data-stage='idle']) .bg { opacity: 0; }
+.cover:not([data-stage='idle']) .dust { opacity: 0; transition: opacity 600ms ease; animation: none; }
+.cover:not([data-stage='idle']) :is(.head, .foot) { animation: away 600ms ease forwards; }
+.cover:not([data-stage='idle']) .head { animation-delay: 120ms; }
+@keyframes away { to { opacity: 0; transform: translateY(-8px); filter: blur(6px); } }
+
+.cover:not([data-stage='idle']) .petal { animation: fall 900ms cubic-bezier(0.45, 0, 0.6, 1) calc(var(--fall, 0ms)) forwards; }
+.cover:not([data-stage='idle']) .front .petal { --fall: 0ms; }
+.cover:not([data-stage='idle']) .mid { --fall: 120ms; }
+.cover:not([data-stage='idle']) .back { --fall: 240ms; }
+@keyframes fall {
+  0% { opacity: 1; transform: rotate(var(--a)) scale(1); }
+  35% { opacity: 1; transform: rotate(calc(var(--a) * 1.3)) scale(1.08); }
+  100% { opacity: 0; transform: rotate(calc(var(--a) * 1.6)) translateY(60px) scale(.9); }
+}
+.cover:not([data-stage='idle']) .sunburst { animation: flare 1200ms ease-out forwards, turn 90s linear infinite; }
+@keyframes flare { 0% { opacity: 1; scale: 1; } 30% { opacity: 1; scale: 1.25; } 100% { opacity: 0; scale: 1.5; } }
+.cover:not([data-stage='idle']) :is(.halo, .base) { animation: away 700ms ease 200ms forwards; }
+.cover[data-stage='out'] .mono { opacity: 0; transition: opacity 200ms ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .petal, .mono, .sunburst, .halo, .base, .dust, .open, .open::after { animation: none; }
+  .sunburst, .halo { opacity: 1; }
+  .base { transform: none; }
+  .inviteLabel { opacity: .85; }
+}

@@ -12,7 +12,7 @@ const mono = monogramSrc(settings.dateMonogram);
 const khDigits = (v: string) => v.replace(/\d/g, (d) => '០១២៣៤៥៦៧៨៩'[Number(d)]);
 const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
 ---
-<section id="date" class="date">
+<section id="date" class="date" data-opening>
   <div class="glow"></div>
   <div class="dust" aria-hidden="true">
     {dust.map((d) => (
@@ -20,36 +20,40 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
     ))}
   </div>
 
-  <div data-reveal class="stack">
-    <div class="kicker">
+  <div class="stack">
+    <div class="kicker a-kicker">
       <div class="rule-fade-r kline"></div>
       <div class="en caps kick">Save the date</div>
       <div class="rule-fade-l kline"></div>
     </div>
 
-    {mono
-      ? <MonogramImage client:load src={mono.src} className={mono.square ? 'mono-img square' : 'mono-img'} />
-      : <div class="mono-type">M<span>&amp;</span>N</div>}
+    <div class="a-mono">
+      {mono
+        ? <MonogramImage client:load src={mono.src} className={mono.square ? 'mono-img square' : 'mono-img'} />
+        : <div class="mono-type">M<span>&amp;</span>N</div>}
+    </div>
 
     <div class="when">
-      <div class="kh month">ខែ{date.monthKh}</div>
+      <div class="kh month a-month">ខែ{date.monthKh}</div>
       <div class="triple">
-        <div class="kh side">{weekdayKh}</div>
-        <div class="kh day">{khDigits(date.day)}</div>
-        <div class="kh side">ឆ្នាំ{date.yearKh}</div>
+        <div class="kh side a-side-l">{weekdayKh}</div>
+        <div class="kh day a-day">
+          <span class="day-num" data-day={khDigits(date.day)}>{khDigits(date.day)}</span>
+        </div>
+        <div class="kh side a-side-r">ឆ្នាំ{date.yearKh}</div>
       </div>
-      <div class="kh lunar">{lunarRest.join(' ')}</div>
+      <div class="kh lunar a-lunar">{lunarRest.join(' ')}</div>
     </div>
 
     <div class="countdown" data-countdown={date.iso}>
-      <div class="cd-head">
+      <div class="cd-head a-cdhead">
         <div class="rule-fade-r cd-line"></div>
         <div class="kh cd-title">រាប់ថយក្រោយ</div>
         <div class="rule-fade-l cd-line"></div>
       </div>
       <div class="cd-row">
-        {([['d', 'ថ្ងៃ'], ['h', 'ម៉ោង'], ['m', 'នាទី'], ['s', 'វិនាទី']] as const).map(([k, kh]) => (
-          <div class="cd-cell">
+        {([['d', 'ថ្ងៃ'], ['h', 'ម៉ោង'], ['m', 'នាទី'], ['s', 'វិនាទី']] as const).map(([k, kh], i) => (
+          <div class="cd-cell a-cell" style={`--i:${i}`}>
             <div class="kh cd-num" data-cd={k}>--</div>
             <div class="kh cd-kh">{kh}</div>
           </div>
@@ -58,7 +62,7 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
       <div class="kh cd-today" hidden>ថ្ងៃនេះជាថ្ងៃមង្គល</div>
     </div>
 
-    <GuestCard client:load />
+    <div class="a-card"><GuestCard client:load /></div>
   </div>
 
   <div class="story">
@@ -116,7 +120,16 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
     content: ''; position: absolute; left: -2.5px; top: 16px; width: 5px; height: 5px;
     transform: rotate(45deg); background: var(--gold-a55);
   }
-  .cd-num { font-size: 24px; color: var(--gold-lt); line-height: 1.5; }
+  .cd-num { --reel-h: 1.5; font-size: 24px; color: var(--gold-lt); line-height: 1.5; height: 1.5em; }
+  /* Digit reels, one per digit (built by the script). Every reel is the same width, so the
+     numbers never shift sideways as digits change. Most Khmer digits are 0.63em wide, ២ ៣ ៧ up to 0.83em,
+     so the reel only clips top and bottom and lets the wide ones spill a hair into the gap. */
+  :is(.cd-num, .day-num) :global(.reel) {
+    display: inline-block; width: 0.76em; height: calc(var(--reel-h) * 1em);
+    clip-path: inset(0 -0.2em); vertical-align: top; text-align: center;
+  }
+  :is(.cd-num, .day-num) :global(.strip) { display: block; }
+  :is(.cd-num, .day-num) :global(.strip > span) { display: block; height: calc(var(--reel-h) * 1em); margin: 0 -0.2em; white-space: nowrap; }
   .cd-kh { font-size: 11px; color: var(--gold); line-height: 1.6; opacity: .85; }
   .cd-today { font-size: 14px; color: var(--gold-lt); line-height: 1.8; }
   .countdown.is-today .cd-row { display: none; }
@@ -149,32 +162,159 @@ const [weekdayKh, ...lunarRest] = date.lunarKh.split(' ');
   .strip-caption div:first-child { font-size: 6px; letter-spacing: 0.2em; color: var(--wine-700); }
   .strip-caption div:last-child { font-size: 5.5px; letter-spacing: 0.18em; color: var(--tan); }
   .story-kh { position: relative; font-size: 11px; color: var(--gold-lt); opacity: .8; line-height: 2; }
+
+  /* ---------- Opening: plays once, right after the cover's flash ---------- */
+  .date[data-opening] { --t0: 100ms; }
+  .date[data-opening]:not(.is-open) :is(.a-kicker, .a-mono, .a-month, .a-side-l, .a-side-r, .a-day, .a-lunar, .a-cdhead, .a-cell, .a-card) { opacity: 0; }
+  .is-open .a-kicker .kline { animation: lineIn 900ms var(--ease) calc(var(--t0) + 0ms) both; }
+  .is-open .a-kicker .kline:first-child { transform-origin: right; }
+  .is-open .a-kicker .kline:last-child { transform-origin: left; }
+  .is-open .a-kicker .kick { animation: spaceIn 1300ms var(--ease) calc(var(--t0) + 100ms) both; }
+  /* The cover's monogram lands exactly here, so this one takes over at once with a flare. */
+  .is-open .a-mono { animation: monoLand 1200ms ease-out 0ms both; }
+  .is-open .a-month { animation: dropIn 800ms var(--ease) calc(var(--t0) + 950ms) both; }
+  .is-open .a-side-l { animation: slideL 900ms var(--ease) calc(var(--t0) + 1200ms) both; }
+  .is-open .a-side-r { animation: slideR 900ms var(--ease) calc(var(--t0) + 1200ms) both; }
+  .is-open .a-day { animation: dayIn 1000ms var(--ease) calc(var(--t0) + 1150ms) both; }
+  .is-open .a-day .day-num { animation: dayGlow 1600ms ease-out calc(var(--t0) + 1800ms) both; }
+  .is-open .a-lunar { animation: fadeUp 800ms var(--ease) calc(var(--t0) + 1900ms) both; }
+  .is-open .a-cdhead { animation: fadeUp 800ms var(--ease) calc(var(--t0) + 2100ms) both; }
+  .is-open .a-cell { animation: flipIn 800ms var(--ease) calc(var(--t0) + 2250ms + var(--i) * 110ms) both; }
+  .is-open .a-card { animation: fadeUp 1000ms var(--ease) calc(var(--t0) + 2750ms) both; }
+  .date { --ease: cubic-bezier(0.16, 0.84, 0.28, 1); }
+  /* The guest card's wrapper spans the column so the card can reach its full width. */
+  .a-card { display: flex; justify-content: center; width: 100%; }
+
+  @keyframes lineIn { from { transform: scaleX(0); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes spaceIn { from { opacity: 0; letter-spacing: 0.9em; filter: blur(3px); } to { opacity: 1; letter-spacing: 0.32em; filter: none; } }
+  @keyframes monoLand {
+    0% { opacity: 0; transform: scale(.85); filter: brightness(1.7) drop-shadow(0 0 14px rgba(244, 218, 155, 0.9)); }
+    40% { opacity: 1; }
+    100% { opacity: 1; transform: none; filter: none; }
+  }
+  @keyframes dropIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+  @keyframes slideL { from { opacity: 0; transform: translateX(-36px); clip-path: inset(0 0 0 100%); } to { opacity: 1; transform: none; clip-path: inset(0); } }
+  @keyframes slideR { from { opacity: 0; transform: translateX(36px); clip-path: inset(0 100% 0 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
+  @keyframes dayIn { from { opacity: 0; transform: scale(1.6); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+  @keyframes dayGlow {
+    0% { text-shadow: 0 0 0 rgba(244, 218, 155, 0); color: var(--gold-dk); }
+    25% { text-shadow: 0 0 22px rgba(244, 218, 155, 0.9), 0 0 4px rgba(255, 245, 210, 0.9); color: var(--gold-lt); }
+    100% { text-shadow: 0 0 0 rgba(244, 218, 155, 0); color: var(--gold-dk); }
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes flipIn { from { opacity: 0; transform: perspective(300px) rotateX(-90deg); } to { opacity: 1; transform: none; } }
+
+  .day-num { --reel-h: 1.25; display: inline-block; height: 1.25em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .date[data-opening] :is(.a-kicker, .a-mono, .a-month, .a-side-l, .a-side-r, .a-day, .a-lunar, .a-cdhead, .a-cell, .a-card) { opacity: 1 !important; animation: none !important; }
+  }
 </style>
 
 <script>
+  import { onOpened } from '@/lib/events';
+
+  // Each digit sits in its own fixed-width reel; every countdown tick rolls the changed digits
+  // up like an odometer.
+  const KH = '០១២៣៤៥៦៧៨៩';
+  const kh = (v: string) => v.replace(/\d/g, (d) => KH[Number(d)]);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /** A reel for each digit of `cell`, rebuilt if the number of digits changes. */
+  const reels = (cell: HTMLElement, len: number) => {
+    if (cell.children.length !== len || !cell.querySelector('.reel')) {
+      cell.textContent = '';
+      for (let i = 0; i < len; i++) {
+        const reel = document.createElement('span');
+        reel.className = 'reel';
+        reel.innerHTML = '<span class="strip"><span></span></span>';
+        cell.append(reel);
+      }
+    }
+    return Array.from(cell.querySelectorAll<HTMLElement>('.strip'));
+  };
+  const fill = (strip: HTMLElement, chars: string[]) => {
+    strip.innerHTML = chars.map((c) => `<span>${c}</span>`).join('');
+  };
+  /** Height of one digit in the reel, in em (the cell's --reel-h). */
+  const lineH = (cell: HTMLElement) => parseFloat(getComputedStyle(cell).getPropertyValue('--reel-h')) || 1.5;
+
+  /** Shows `value`; digits that changed roll up into place when `roll` is set. */
+  const show = (cell: HTMLElement, value: string, roll: boolean) => {
+    const strips = reels(cell, value.length);
+    const h = lineH(cell);
+    strips.forEach((strip, i) => {
+      const prev = strip.dataset.v;
+      const next = value[i];
+      if (prev === next) return;
+      strip.dataset.v = next;
+      if (!roll || prev === undefined || reduced) { fill(strip, [next]); return; }
+      fill(strip, [prev, next]);
+      strip.animate([{ transform: 'translateY(0)' }, { transform: `translateY(-${h}em)` }],
+        { duration: 380, easing: 'cubic-bezier(0.3, 0.7, 0.3, 1)' })
+        .finished.then(() => { if (strip.dataset.v === next) fill(strip, [next]); }, () => {});
+    });
+  };
+
+  /** When the entrance has finished building (its last piece ends ~3.85s in). */
+  const SETTLED_MS = 3900;
+  /** A still moment after the entrance before the first nudge. */
+  const HINT_PAUSE_MS = 1500;
+  /** How often the page nudges up to show there's more below, until the guest scrolls. */
+  const HINT_EVERY_MS = 7000;
+
+  /** Bounces the section and the one after it up a little, hinting that the page scrolls. */
+  const hintScroll = (sec: HTMLElement) => {
+    const els = [sec, sec.nextElementSibling].filter((el): el is HTMLElement => el instanceof HTMLElement);
+    const nudge = () => els.forEach((el) => el.animate([
+      { transform: 'none' },
+      { transform: 'translateY(-28px)', offset: 0.3 },
+      { transform: 'none', offset: 0.55 },
+      { transform: 'translateY(-10px)', offset: 0.72 },
+      { transform: 'none' },
+    ], { duration: 2800, easing: 'ease-in-out' }));
+    let timer = 0;
+    const first = window.setTimeout(() => { nudge(); timer = window.setInterval(nudge, HINT_EVERY_MS); }, HINT_PAUSE_MS);
+    const stop = () => { window.clearTimeout(first); window.clearInterval(timer); window.removeEventListener('scroll', stop); };
+    window.addEventListener('scroll', stop, { passive: true });
+    if (window.scrollY > 10) stop();
+  };
+
+  // Opening: once the cover is gone, play the entrance, then hint that the page scrolls.
+  for (const sec of document.querySelectorAll<HTMLElement>('[data-opening]')) {
+    const day = sec.querySelector<HTMLElement>('[data-day]');
+    if (day) show(day, day.dataset.day!, false);
+    onOpened(() => {
+      sec.classList.add('is-open');
+      if (!reduced) window.setTimeout(() => hintScroll(sec), SETTLED_MS);
+    });
+  }
+
   // Live countdown to the wedding; switches to a "today" line once the day arrives.
   for (const el of document.querySelectorAll<HTMLElement>('[data-countdown]')) {
     const target = new Date(el.dataset.countdown!).getTime();
     const cells = Object.fromEntries(
       Array.from(el.querySelectorAll<HTMLElement>('[data-cd]')).map((c) => [c.dataset.cd!, c]),
     );
-    const kh = (v: string) => v.replace(/\d/g, (d) => '០១២៣៤៥៦៧៨៩'[Number(d)]);
     const pad = (n: number) => kh(String(n).padStart(2, '0'));
-    const tick = () => {
-      const ms = target - Date.now();
-      if (ms <= 0) {
+    const values = () => {
+      const s = Math.floor((target - Date.now()) / 1000);
+      return {
+        d: kh(String(Math.floor(s / 86400))), h: pad(Math.floor(s / 3600) % 24),
+        m: pad(Math.floor(s / 60) % 60), s: pad(s % 60),
+      };
+    };
+    const tick = (roll = true) => {
+      if (target - Date.now() <= 0) {
         el.classList.add('is-today');
         el.querySelector<HTMLElement>('.cd-today')!.hidden = false;
         clearInterval(timer);
         return;
       }
-      const s = Math.floor(ms / 1000);
-      cells.d.textContent = kh(String(Math.floor(s / 86400)));
-      cells.h.textContent = pad(Math.floor(s / 3600) % 24);
-      cells.m.textContent = pad(Math.floor(s / 60) % 60);
-      cells.s.textContent = pad(s % 60);
+      const v = values();
+      for (const k of ['d', 'h', 'm', 's'] as const) show(cells[k], v[k], roll);
     };
     const timer = setInterval(tick, 1000);
-    tick();
+    tick(false);
   }
 </script>
