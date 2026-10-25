@@ -14,6 +14,8 @@ export interface WishRow {
   edit_message: string | null; edit_at: string | null; tg_edit_message_id: number | null;
   /** Why the wish (status rejected) or the guest's last edit (status approved) wasn't approved; the guest sees it. */
   reason: string | null;
+  /** Position among the pinned wishes, shown first on the site (1 = top); null when not pinned. Approved only. */
+  pin_order: number | null;
 }
 
 let db: DatabaseSync | undefined;
@@ -51,7 +53,7 @@ export function getDb(): DatabaseSync {
   `);
   // Columns added after the first release.
   const columns = new Set((db.prepare('PRAGMA table_info(wishes)').all() as { name: string }[]).map((c) => c.name));
-  for (const [name, type] of [['edit_message', 'TEXT'], ['edit_at', 'TEXT'], ['tg_edit_message_id', 'INTEGER'], ['reason', 'TEXT']]) {
+  for (const [name, type] of [['edit_message', 'TEXT'], ['edit_at', 'TEXT'], ['tg_edit_message_id', 'INTEGER'], ['reason', 'TEXT'], ['pin_order', 'INTEGER']]) {
     if (!columns.has(name)) db.exec(`ALTER TABLE wishes ADD COLUMN ${name} ${type}`);
   }
   return db;
@@ -115,32 +117,79 @@ export function latestWishOfGuest(guestId: number): WishRow | undefined {
   return getDb().prepare('SELECT * FROM wishes WHERE guest_id = ? ORDER BY id DESC LIMIT 1').get(guestId) as WishRow | undefined;
 }
 
+/** Approved wishes for the site: pinned ones first, in their order, then the newest. */
 export function approvedWishes(limit = 300) {
   return getDb().prepare(`
-    SELECT id, name, message, created_at FROM wishes WHERE status = 'approved' ORDER BY id DESC LIMIT ?
-  `).all(limit) as Pick<WishRow, 'id' | 'name' | 'message' | 'created_at'>[];
+    SELECT id, name, message, pin_order, created_at FROM wishes WHERE status = 'approved'
+    ORDER BY pin_order IS NULL, pin_order, id DESC LIMIT ?
+  `).all(limit) as unknown as Pick<WishRow, 'id' | 'name' | 'message' | 'pin_order' | 'created_at'>[];
 }
 
-/** Wishes for the admin panel. "pending" also takes in approved wishes with an edit waiting. */
-export function listWishes(status?: WishStatus) {
+/** Pins an approved wish at the bottom of the pinned ones, or unpins it. Undefined if it isn't approved. */
+export function setPinned(id: number, pinned: boolean): WishRow | undefined {
+  const db = getDb();
+  if (!pinned) {
+    const row = db.prepare('UPDATE wishes SET pin_order = NULL WHERE id = ? RETURNING *').get(id) as WishRow | undefined;
+    renumberPins();
+    return row;
+  }
+  const row = db.prepare(`
+    UPDATE wishes SET pin_order = (SELECT COALESCE(MAX(pin_order), 0) + 1 FROM wishes)
+    WHERE id = ? AND status = 'approved' AND pin_order IS NULL RETURNING *
+  `).get(id) as WishRow | undefined;
+  if (row) return row;
+  const wish = wishById(id); // already pinned?
+  return wish?.status === 'approved' ? wish : undefined;
+}
+
+/** Puts the pinned wishes in the given order (ids, top first); ids not pinned are ignored. */
+export function orderPins(ids: number[]): void {
+  const db = getDb();
+  const set = db.prepare('UPDATE wishes SET pin_order = ? WHERE id = ? AND pin_order IS NOT NULL');
+  db.exec('BEGIN');
+  try {
+    ids.forEach((id, i) => set.run(i + 1, id));
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+  renumberPins();
+}
+
+/** Closes gaps so the pinned wishes are numbered 1, 2, 3… */
+function renumberPins(): void {
+  const db = getDb();
+  const ids = db.prepare('SELECT id FROM wishes WHERE pin_order IS NOT NULL ORDER BY pin_order, id').all() as { id: number }[];
+  const set = db.prepare('UPDATE wishes SET pin_order = ? WHERE id = ?');
+  ids.forEach(({ id }, i) => set.run(i + 1, id));
+}
+
+/**
+ * Wishes for the admin panel. "pending" also takes in approved wishes with an edit waiting;
+ * "pinned" lists the pinned ones in their order.
+ */
+export function listWishes(filter?: WishStatus | 'pinned') {
   const db = getDb();
   const order = 'ORDER BY COALESCE(edit_at, created_at) DESC, id DESC';
-  if (!status) return db.prepare(`SELECT * FROM wishes ${order}`).all() as unknown as WishRow[];
-  const where = status === 'pending' ? "status = 'pending' OR edit_message IS NOT NULL" : 'status = ?';
+  if (!filter) return db.prepare(`SELECT * FROM wishes ${order}`).all() as unknown as WishRow[];
+  if (filter === 'pinned') return db.prepare('SELECT * FROM wishes WHERE pin_order IS NOT NULL ORDER BY pin_order').all() as unknown as WishRow[];
+  const where = filter === 'pending' ? "status = 'pending' OR edit_message IS NOT NULL" : 'status = ?';
   const stmt = db.prepare(`SELECT * FROM wishes WHERE ${where} ${order}`);
-  return (status === 'pending' ? stmt.all() : stmt.all(status)) as unknown as WishRow[];
+  return (filter === 'pending' ? stmt.all() : stmt.all(filter)) as unknown as WishRow[];
 }
 
-/** How many wishes are in each state, and in all; "pending" counts waiting edits too. */
-export function wishCounts(): Record<WishStatus | 'all', number> {
+/** How many wishes are in each state, pinned, and in all; "pending" counts waiting edits too. */
+export function wishCounts(): Record<WishStatus | 'pinned' | 'all', number> {
   return getDb().prepare(`
     SELECT
       COALESCE(SUM(status = 'pending' OR edit_message IS NOT NULL), 0) AS pending,
       COALESCE(SUM(status = 'approved'), 0) AS approved,
       COALESCE(SUM(status = 'rejected'), 0) AS rejected,
+      COALESCE(SUM(pin_order IS NOT NULL), 0) AS pinned,
       COUNT(*) AS "all"
     FROM wishes
-  `).get() as unknown as Record<WishStatus | 'all', number>;
+  `).get() as unknown as Record<WishStatus | 'pinned' | 'all', number>;
 }
 
 /**
@@ -184,11 +233,20 @@ export function setWishTelegramEditMessage(id: number, messageId: number | null)
 
 /** Sets a wish's status (with the reason, when rejecting); returns the updated row, or undefined if there's no such wish. */
 export function setWishStatus(id: number, status: WishStatus, reason: string | null = null): WishRow | undefined {
-  return getDb().prepare(`
+  // Only approved wishes stay pinned.
+  const row = getDb().prepare(`
     UPDATE wishes SET status = ?, decided_at = CASE WHEN ? = 'pending' THEN NULL ELSE datetime('now') END,
-      reason = CASE WHEN ? = 'rejected' THEN ? ELSE NULL END
+      reason = CASE WHEN ? = 'rejected' THEN ? ELSE NULL END,
+      pin_order = CASE WHEN ? = 'approved' THEN pin_order ELSE NULL END
     WHERE id = ? RETURNING *
-  `).get(status, status, status, reason, id) as WishRow | undefined;
+  `).get(status, status, status, reason, status, id) as WishRow | undefined;
+  renumberPins();
+  return row;
+}
+
+/** The couple corrects a wish's text themselves; it shows as is, with no approval step. */
+export function setWishMessage(id: number, message: string): WishRow | undefined {
+  return getDb().prepare('UPDATE wishes SET message = ? WHERE id = ? RETURNING *').get(message, id) as WishRow | undefined;
 }
 
 /** Sets or changes the reason the guest sees for a rejection. */
@@ -207,7 +265,9 @@ export function setWishTelegramMessage(id: number, messageId: number): void {
 }
 
 export function deleteWish(id: number): WishRow | undefined {
-  return getDb().prepare('DELETE FROM wishes WHERE id = ? RETURNING *').get(id) as WishRow | undefined;
+  const row = getDb().prepare('DELETE FROM wishes WHERE id = ? RETURNING *').get(id) as WishRow | undefined;
+  renumberPins();
+  return row;
 }
 
 // ---------- Small key/value store (the Telegram update offset) ----------

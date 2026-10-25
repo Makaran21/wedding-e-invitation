@@ -62,6 +62,10 @@
 .badge[data-status='approved'] { background: rgba(60, 138, 76, 0.12); color: #2F6B3A; }
 .badge[data-status='rejected'] { background: rgba(176, 67, 79, 0.12); color: #9A2F3B; }
 .badge[data-status='none'] { background: rgba(90, 52, 24, 0.07); color: var(--tan); }
+.badges { flex: none; display: flex; align-items: center; gap: 6px; }
+.pin { padding: 2px 8px; border-radius: 999px; font-size: 12px; background: rgba(217, 164, 65, 0.22); color: var(--gold-dk); font-weight: 600; }
+.pinBtn { color: var(--gold-dk); border-color: rgba(217, 164, 65, 0.7); }
+.hint { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--tan); }
 .message { margin: 0; font-family: var(--kh-font); font-size: 15px; line-height: 1.85; white-space: pre-wrap; overflow-wrap: anywhere; }
 .edit {
   display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px;

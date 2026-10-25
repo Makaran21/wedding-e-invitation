@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import s from './AdminPanel.module.css';
 
 type Status = 'pending' | 'approved' | 'rejected';
-type Filter = Status | 'all';
+type Filter = Status | 'pinned' | 'all';
 interface AdminWish {
   id: number; guest_id: number | null; name: string; message: string; status: Status;
   ip: string; created_at: string; decided_at: string | null;
@@ -10,6 +10,8 @@ interface AdminWish {
   edit_message: string | null; edit_at: string | null;
   /** Shown to the guest: why the wish (or their last change) wasn't approved. */
   reason: string | null;
+  /** Position among the pinned wishes (1 = top of the site); null when not pinned. */
+  pin_order: number | null;
 }
 interface AdminGuest {
   id: number; token: string; name: string; created_at: string;
@@ -86,7 +88,7 @@ export default function AdminPanel({ adminKey, couple, signedIn }: { adminKey: s
   const [tab, setTab] = useState<'wishes' | 'guests'>('wishes');
   const [filter, setFilter] = useState<Filter>('pending');
   const [wishes, setWishes] = useState<AdminWish[]>([]);
-  const [counts, setCounts] = useState<Record<Filter, number>>({ pending: 0, approved: 0, rejected: 0, all: 0 });
+  const [counts, setCounts] = useState<Record<Filter, number>>({ pending: 0, approved: 0, rejected: 0, pinned: 0, all: 0 });
   const [guests, setGuests] = useState<AdminGuest[]>([]);
   const [names, setNames] = useState('');
   const [search, setSearch] = useState('');
@@ -170,6 +172,29 @@ export default function AdminPanel({ adminKey, couple, signedIn }: { adminKey: s
     const reason = approve ? '' : askReason();
     if (reason === null) return;
     patch(w, { edit: approve ? 'approve' : 'reject', reason }, approve ? `Change approved: ${w.name}` : `Change rejected: ${w.name}`);
+  };
+
+  const editText = (w: AdminWish) => {
+    const message = prompt('Edit the wish (shows on the site as you write it):', w.message)?.trim();
+    if (!message || message === w.message) return;
+    patch(w, { message }, 'Wish text saved');
+  };
+
+  const pin = (w: AdminWish, pinned: boolean) =>
+    patch(w, { pinned }, pinned ? `Pinned: ${w.name}` : `Unpinned: ${w.name}`);
+
+  /** Moves a pinned wish up (-1) or down (+1) among the pinned ones. */
+  const move = async (index: number, by: -1 | 1) => {
+    const order = [...wishes];
+    const [w] = order.splice(index, 1);
+    order.splice(index + by, 0, w);
+    setWishes(order);
+    try {
+      await api('wishes/pins', { method: 'PUT', body: JSON.stringify({ ids: order.map((x) => x.id) }) });
+    } catch {
+      flash('Could not reorder — try again');
+    }
+    await loadWishes();
   };
 
   const changeReason = (w: AdminWish) => {
@@ -256,6 +281,7 @@ export default function AdminPanel({ adminKey, couple, signedIn }: { adminKey: s
     ['pending', 'Pending', counts.pending],
     ['approved', 'Approved', counts.approved],
     ['rejected', 'Rejected', counts.rejected],
+    ['pinned', '📌 Pinned', counts.pinned],
     ['all', 'All', counts.all],
   ];
 
@@ -293,14 +319,22 @@ export default function AdminPanel({ adminKey, couple, signedIn }: { adminKey: s
             </div>
 
             {wishes.length === 0 ? (
-              <p className={s.empty}>{filter === 'pending' ? 'Nothing waiting for approval.' : 'No wishes here yet.'}</p>
+              <p className={s.empty}>
+                {filter === 'pending' ? 'Nothing waiting for approval.'
+                  : filter === 'pinned' ? 'Nothing pinned. Pin approved wishes to show them first on the site.'
+                    : 'No wishes here yet.'}
+              </p>
             ) : (
               <div className={s.grid}>
-                {wishes.map((w) => (
+                {filter === 'pinned' && <p className={s.hint}>Shown first on the site, in this order. Use ↑ ↓ to sort.</p>}
+                {wishes.map((w, i) => (
                   <article key={w.id} className={s.card} data-status={w.status}>
                     <div className={s.cardHead}>
                       <span className={s.name}>{w.name}</span>
-                      <span className={s.badge} data-status={w.status}>{STATUS_LABEL[w.status]}</span>
+                      <span className={s.badges}>
+                        {w.pin_order !== null && <span className={s.pin}>📌 {w.pin_order}</span>}
+                        <span className={s.badge} data-status={w.status}>{STATUS_LABEL[w.status]}</span>
+                      </span>
                     </div>
                     <p className={s.message}>{w.message}</p>
                     {w.edit_message && (
@@ -323,7 +357,18 @@ export default function AdminPanel({ adminKey, couple, signedIn }: { adminKey: s
                       <span>{when(w.created_at)}</span>
                       <span title="IP address">{w.ip}</span>
                     </div>
+                    {filter === 'pinned' && (
+                      <div className={s.actions}>
+                        <button type="button" className={s.btn} disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move up">↑ Up</button>
+                        <button type="button" className={s.btn} disabled={i === wishes.length - 1} onClick={() => move(i, 1)} aria-label="Move down">↓ Down</button>
+                      </div>
+                    )}
                     <div className={s.actions}>
+                      {w.status === 'approved' && (
+                        <button type="button" className={`${s.btn} ${s.pinBtn}`} disabled={busy === w.id} onClick={() => pin(w, w.pin_order === null)}>
+                          {w.pin_order === null ? '📌 Pin to top' : 'Unpin'}
+                        </button>
+                      )}
                       {w.status !== 'approved' && (
                         <button type="button" className={`${s.btn} ${s.approve}`} disabled={busy === w.id} onClick={() => decide(w, 'approved')}>Approve</button>
                       )}
@@ -333,6 +378,7 @@ export default function AdminPanel({ adminKey, couple, signedIn }: { adminKey: s
                       {w.status !== 'pending' && (
                         <button type="button" className={s.btn} disabled={busy === w.id} onClick={() => decide(w, 'pending')}>Back to pending</button>
                       )}
+                      <button type="button" className={s.btn} disabled={busy === w.id} onClick={() => editText(w)}>Edit text</button>
                       {w.status === 'rejected' && (
                         <button type="button" className={s.btn} disabled={busy === w.id} onClick={() => changeReason(w)}>{w.reason ? 'Change reason' : 'Add reason'}</button>
                       )}

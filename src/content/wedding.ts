@@ -10,7 +10,12 @@ export interface Bilingual { kh: string; en: string }
 export interface ProgramItem { time: string; kh: string; en: string; icon: ProgramIcon }
 export interface VenueDetail { en: string; kh: string; body: string }
 export interface GalleryPhoto { src: string; label: string; shape?: 'wide' | 'landscape' | 'tall' }
-export interface Wish { name: string; message: string }
+export interface Wish {
+  name: string;
+  message: string;
+  /** Pinned by the couple: shown first. */
+  pinned?: boolean;
+}
 
 export type KhmerFont = 'Moulpali' | 'Moul' | 'Preahvihear' | 'Battambang' | 'Suwannaphum' | 'Kantumruy Pro' | 'Koulen';
 export type LatinFont = 'Cinzel' | 'Cormorant Garamond' | 'EB Garamond' | 'Marcellus' | 'Playfair Display' | 'Jost';

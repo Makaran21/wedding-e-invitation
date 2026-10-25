@@ -79,8 +79,10 @@ fetched. Download them from the design project and put them in `public/assets/`:
 
 Open `https://your-site/<ADMIN_KEY>` and sign in with `ADMIN_PASSWORD`. On phone or desktop:
 
-- **Wishes**: Pending (new wishes and changes waiting), Approved, Rejected, All. Approve, reject
-  (with a reason), put back to pending, or delete.
+- **Wishes**: Pending (new wishes and changes waiting), Approved, Rejected, Pinned, All. Approve,
+  reject (with a reason), put back to pending, correct the text, or delete.
+- **Pin** approved wishes to show them first on the site, and sort the pinned ones with ↑ ↓ under
+  **Pinned**. A wish that stops being approved is unpinned.
 - **Guest links**: create links (many at once), copy or share them, rename, delete, and see who has
   sent a wish.
 

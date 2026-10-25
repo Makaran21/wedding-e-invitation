@@ -268,7 +268,8 @@ export default function Wishes() {
           <p className={s.empty}>មិនទាន់មានការជូនពរនៅឡើយទេ · No wishes yet — be the first.</p>
         )}
         {wishes.map((w, i) => (
-          <div key={`${i}-${w.message.slice(0, 12)}`} className={s.wish}>
+          <div key={`${i}-${w.message.slice(0, 12)}`} className={w.pinned ? `${s.wish} ${s.pinned}` : s.wish}>
+            {w.pinned && <span className={s.pinMark} aria-label="Pinned">📌</span>}
             <div className={s.wishName}>{w.name}</div>
             <div className={s.wishMsg}>{w.message}</div>
           </div>

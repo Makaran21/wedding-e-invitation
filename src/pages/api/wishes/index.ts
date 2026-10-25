@@ -9,7 +9,7 @@ export const prerender = false;
 /** Approved wishes, newest first: what every guest sees. */
 export const GET: APIRoute = () => {
   startTelegram();
-  return json({ wishes: approvedWishes().map(({ name, message }) => ({ name, message })) });
+  return json({ wishes: approvedWishes().map(({ name, message, pin_order }) => ({ name, message, pinned: pin_order !== null })) });
 };
 
 /**
