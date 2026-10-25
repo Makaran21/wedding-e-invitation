@@ -25,6 +25,22 @@ const OUT_MS = 600;
 /** Scrolling stays locked until Save the Date has finished building (its last piece ends ~3.85s after hand-off). */
 const SETTLE_MS = 3900;
 
+/** The poem written on the letter inside the envelope. */
+const POEM = [
+  'ស្នេហាពីរចិត្ត រួមផ្សំជាមួយ',
+  'ដូចផ្កាពីរទង រីកក្នុងសួនតែមួយ',
+  'សូមសុភមង្គល ស្ថិតស្ថេរគង់វង្ស',
+  'ពីថ្ងៃនេះទៅ ជារៀងរហូត',
+  'ព្រះចន្ទរះភ្លឺ ចាំងលើវាលស្រែ',
+  'ចិត្តពីរស្រឡាញ់ មិនដែលប្រែប្រួល',
+  'ដៃក្ដោបដៃជាប់ ដើរលើផ្លូវតែមួយ',
+  'សុខទុក្ខរួមគ្នា រហូតដល់ចាស់ជរា',
+  'ផ្កាម្លិះក្រអូប ផ្សាយក្លិនពេញភូមិ',
+  'ពរជ័យមាតាបិតា ហែហមកូនទាំងពីរ',
+  'សូមឲ្យមានកូនចៅ ពេញផ្ទះពេញសម្បុក',
+  'សេចក្ដីស្រឡាញ់នេះ ស្ថិតស្ថេរអស់កល្ប',
+];
+
 const delay = (ms: number) => ({ '--d': `${ms}ms` }) as CSSProperties;
 
 /** Wax seal outline: a circle with a soft, uneven rim. */
@@ -178,24 +194,14 @@ export default function Cover() {
         <div className={s.stage}>
           <div className={s.envelope} onClick={open} aria-hidden="true">
             <div className={s.inside} />
-            {/* The letter inside: the couple's mark, the occasion, their names and the day. */}
+            {/* The letter inside: the occasion as its title, then a poem filling the page as fine
+                print (texture, like a printed card, not for reading here). */}
             <div className={s.card}>
-              {mono
-                ? <MonogramImage src={mono.src} className={s.cardMono} />
-                : <div className={s.monoText}>{couple.monogramKh}</div>}
               <div className={s.cardTitle}>សិរីមង្គលអាពាហ៍ពិពាហ៍</div>
               <div className={s.cardLine} />
-              <div className={s.cardNames}>{couple.groom.kh} <span>និង</span> {couple.bride.kh}</div>
-              <div className={s.cardDate}>{wedding.date.fullKh}</div>
-              {/* A short poem as fine print: texture, like a printed card, not for reading here. */}
-              <p className={s.cardFine} aria-hidden="true">
-                ស្នេហាពីរចិត្ត រួមផ្សំជាមួយ<br />
-                ដូចផ្កាពីរទង រីកក្នុងសួនតែមួយ<br />
-                សូមសុភមង្គល ស្ថិតស្ថេរគង់វង្ស<br />
-                ពីថ្ងៃនេះទៅ ជារៀងរហូត
-              </p>
-              <div className={s.cardLine} />
-              <div className={s.cardText}>សូមស្វាគមន៍</div>
+              <div className={s.cardPoem} aria-hidden="true">
+                {POEM.map((line) => <span key={line}>{line}</span>)}
+              </div>
             </div>
             <div className={s.pocket} />
             <svg className={s.lines} viewBox="0 0 290 200" preserveAspectRatio="none">
