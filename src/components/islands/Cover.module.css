@@ -299,6 +299,8 @@
 .gemTop { top: -4px; }
 .gemBottom { bottom: -4px; }
 .open:active { transform: scale(.97); }
+/* Until the entrance has played, nothing invites a tap. */
+.cover:not([data-ready]) :is(.envelope, .seal, .open) { cursor: default; }
 .open:focus-visible { outline: 1px solid var(--gold-lt); outline-offset: 5px; }
 
 /* ---------- Opening: seal breaks, flap lifts, card slides out in warm light and comes forward ---------- */

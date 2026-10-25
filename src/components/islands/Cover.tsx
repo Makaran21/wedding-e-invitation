@@ -86,12 +86,17 @@ export default function Cover() {
   const [stage, setStage] = useState<Stage>('idle');
   const [mounted, setMounted] = useState(true);
   const [guest, setGuest] = useState(wedding.guestDefault);
+  /** The entrance can't be skipped: the envelope only opens once it has fully played. */
+  const [ready, setReady] = useState(false);
   const dust = useRef<HTMLCanvasElement>(null);
   const mono = monogramSrc(settings.monogram);
 
   useEffect(() => {
     loadGuest().then((g) => setGuest(g.name));
     showProgress(INTRO_MS);
+    const instant = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const t = setTimeout(() => setReady(true), instant ? 0 : INTRO_MS);
+    return () => clearTimeout(t);
   }, []);
   useGoldDust(dust, mounted && stage === 'idle');
 
@@ -113,7 +118,7 @@ export default function Cover() {
   }, [stage]);
 
   const open = () => {
-    if (stage !== 'idle') return;
+    if (stage !== 'idle' || !ready) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       document.body.classList.remove('is-locked');
       markOpened();
@@ -128,7 +133,7 @@ export default function Cover() {
   if (!mounted) return null;
 
   return (
-    <div className={s.cover} data-stage={stage} aria-hidden={stage !== 'idle' || undefined}>
+    <div className={s.cover} data-stage={stage} data-ready={ready || undefined} aria-hidden={stage !== 'idle' || undefined}>
       <div className={s.bg} aria-hidden="true">
         <div className={s.damask} />
         <div className={s.wave} />

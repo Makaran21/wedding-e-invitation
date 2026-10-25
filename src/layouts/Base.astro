@@ -41,6 +41,16 @@ const rootStyle = [
       // Every visit starts at the top, behind the cover — don't restore the old scroll position on reload.
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
+      // While the page is locked (the intro, then Save the Date building), nothing scrolls it:
+      // overflow: hidden alone doesn't stop touch scrolling on iOS, nor wheel and keys everywhere.
+      (() => {
+        const locked = () => document.body?.classList.contains('is-locked');
+        const stop = (e) => { if (locked() && e.cancelable) e.preventDefault(); };
+        const KEYS = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
+        addEventListener('touchmove', stop, { passive: false });
+        addEventListener('wheel', stop, { passive: false });
+        addEventListener('keydown', (e) => { if (KEYS.includes(e.key)) stop(e); });
+      })();
     </script>
   </head>
   <body class={settings.lockUntilOpened ? 'is-locked' : undefined}>
