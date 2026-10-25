@@ -27,6 +27,7 @@ Set `PORT` and `HOST` to change where it listens, e.g. `HOST=0.0.0.0 PORT=4321 n
 | `TRUST_PROXY` | `true` behind Cloudflare (tunnel or proxy) or another reverse proxy, so the guest's real IP is used. |
 | `DB_PATH` | Where the database lives (default `data/wishes.db`). |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Optional: post each wish to a Telegram group with Approve / Reject buttons. |
+| `PUBLIC_NAVBAR`, `PUBLIC_NAVBAR_POSITION` | The compact section dock: `false` hides it; `right` (default) or `bottom` (needs a rebuild). |
 | `PUBLIC_ANIMATION_PROGRESS` | `false` hides the gold progress line along the bottom during animations (needs a rebuild). |
 
 ## Change the content
