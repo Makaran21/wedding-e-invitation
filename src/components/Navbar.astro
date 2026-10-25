@@ -203,29 +203,29 @@ const ITEMS = [
      *  the ornament draws outwards, the English name settles. Resolves when it has all landed. */
     const playCard = (inner: HTMLElement) => {
       const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+      // `both`: delayed pieces stay hidden through their delay instead of showing, then snapping back.
       const lines = veilOrn!.querySelectorAll('.veil-orn-l, .veil-orn-r');
       inner.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
       const steps = [
         veilMedal!.animate([
-          { transform: 'scale(.4) rotate(-70deg)', opacity: 0 },
-          { transform: 'scale(1.08) rotate(6deg)', opacity: 1, offset: 0.7 },
+          { transform: 'scale(.6) rotate(-30deg)', opacity: 0 },
           { transform: 'none', opacity: 1 },
-        ], { duration: 420, easing: ease, fill: 'forwards' }),
+        ], { duration: 420, easing: ease, fill: 'both' }),
         veilName!.animate([
-          { opacity: 0, transform: 'translateY(14px)', filter: 'blur(5px) drop-shadow(0 1.5px 0 rgba(58,8,18,.85))' },
-          { opacity: 1, transform: 'none', filter: 'blur(0) drop-shadow(0 1.5px 0 rgba(58,8,18,.85))' },
-        ], { duration: 340, delay: 80, easing: ease, fill: 'forwards' }),
+          { opacity: 0, transform: 'translateY(8px)' },
+          { opacity: 1, transform: 'none' },
+        ], { duration: 460, delay: 80, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'both' }),
         veilEn!.animate([
           { opacity: 0, letterSpacing: '0.9em' },
           { opacity: 0.85, letterSpacing: '0.42em' },
-        ], { duration: 380, delay: 130, easing: ease, fill: 'forwards' }),
+        ], { duration: 420, delay: 140, easing: ease, fill: 'both' }),
         ...Array.from(lines, (l) => l.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
-          duration: 360, delay: 140, easing: ease, fill: 'forwards',
+          duration: 380, delay: 140, easing: ease, fill: 'both',
         })),
       ];
       // A white glint runs through the name once it has risen.
       veilName!.animate([{ backgroundPosition: '200% 0, 0 0' }, { backgroundPosition: '-100% 0, 0 0' }], {
-        duration: 600, delay: 260, easing: 'ease-in-out',
+        duration: 600, delay: 300, easing: 'ease-in-out',
       });
       return Promise.all(steps.map((s) => s.finished));
     };
