@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { wedding, type Wish } from '@/content/wedding';
 import { getGuestName } from '@/lib/guest';
+import { showProgress } from '@/lib/progress';
 import { wishesStore } from '@/lib/wishes';
 import s from './Wishes.module.css';
 
@@ -9,6 +10,8 @@ const FLIGHT_MS = 1100;
 /** How long the new wish keeps its glow, and the button its "sent" state. */
 const FRESH_MS = 2400;
 const SPARKS = 10;
+/** The flight plus the new wish opening in the list. */
+const SEND_MS = FLIGHT_MS + 900;
 
 type Flight = { x: number; y: number; dx: number; dy: number };
 
@@ -64,6 +67,7 @@ export default function Wishes() {
       const x = box.left + box.width / 2;
       const y = box.top + box.height / 2;
       setFlight({ x, y, dx: list.left + list.width / 2 - x, dy: list.top + 34 - y });
+      showProgress('Sending wish', SEND_MS);
       setMessage('');
       landed = new Promise((done) => setTimeout(done, FLIGHT_MS - 80));
     }

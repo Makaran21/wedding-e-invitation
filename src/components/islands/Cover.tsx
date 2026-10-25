@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { wedding } from '@/content/wedding';
 import { markOpened } from '@/lib/events';
 import { getGuestName } from '@/lib/guest';
+import { showProgress } from '@/lib/progress';
 import { monogramSrc } from '@/lib/monogram';
 import MonogramImage from './MonogramImage';
 import s from './Cover.module.css';
@@ -13,6 +14,8 @@ import s from './Cover.module.css';
  * up towards the guest as the envelope falls away and Save the Date builds behind it.
  */
 type Stage = 'idle' | 'opening' | 'out';
+/** The entrance ends when the open button has finished rising (delay 3150ms + 1000ms). */
+const INTRO_MS = 4150;
 /** When Save the Date starts building: as the card begins to come forward. */
 const HANDOFF_MS = 1700;
 /** Lets the card finish fading before the cover unmounts. */
@@ -86,7 +89,10 @@ export default function Cover() {
   const dust = useRef<HTMLCanvasElement>(null);
   const mono = monogramSrc(settings.monogram);
 
-  useEffect(() => { setGuest(getGuestName()); }, []);
+  useEffect(() => {
+    setGuest(getGuestName());
+    showProgress('Intro', INTRO_MS);
+  }, []);
   useGoldDust(dust, mounted && stage === 'idle');
 
   useEffect(() => {
@@ -114,6 +120,7 @@ export default function Cover() {
       setMounted(false);
       return;
     }
+    showProgress('Opening', HANDOFF_MS);
     setStage('opening');
   };
 
