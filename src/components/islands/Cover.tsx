@@ -145,11 +145,30 @@ export default function Cover() {
 
       <div className={s.content}>
         <header className={s.head}>
-          <div className={`${s.title} ${s.rise}`} style={delay(2250)}>សិរីមង្គលអាពាហ៍ពិពាហ៍</div>
+          <div className={`${s.kicker} ${s.rise}`} style={delay(2150)}>Wedding Invitation</div>
+          <h1 className={`${s.title} ${s.rise}`} style={delay(2250)}>
+            <span className={s.metal}>សិរីមង្គលអាពាហ៍ពិពាហ៍</span>
+          </h1>
+          <svg className={`${s.ornament} ${s.rise}`} style={delay(2350)} viewBox="0 0 220 14" aria-hidden="true">
+            <defs>
+              {/* In user space: a flat line has no height for a bounding-box gradient to use. */}
+              <linearGradient id="cover-rule-l" gradientUnits="userSpaceOnUse" x1="6" x2="92"><stop offset="0" stopColor="#D9A441" stopOpacity="0" /><stop offset="1" stopColor="#F4DA9B" /></linearGradient>
+              <linearGradient id="cover-rule-r" gradientUnits="userSpaceOnUse" x1="214" x2="128"><stop offset="0" stopColor="#D9A441" stopOpacity="0" /><stop offset="1" stopColor="#F4DA9B" /></linearGradient>
+            </defs>
+            <path d="M6 7 H92" stroke="url(#cover-rule-l)" strokeWidth="0.9" />
+            <path d="M128 7 H214" stroke="url(#cover-rule-r)" strokeWidth="0.9" />
+            <circle cx="98" cy="7" r="1.3" fill="#F4DA9B" />
+            <circle cx="122" cy="7" r="1.3" fill="#F4DA9B" />
+            <path d="M110 1.5 L115.5 7 L110 12.5 L104.5 7 Z" fill="none" stroke="#F4DA9B" strokeWidth="0.9" />
+            <path d="M110 4.5 L112.5 7 L110 9.5 L107.5 7 Z" fill="#D9A441" />
+          </svg>
           <div className={`${s.couple} ${s.rise}`} style={delay(2450)}>
-            <span>{couple.groom.kh}</span>
-            <span className={s.amp}>និង</span>
-            <span>{couple.bride.kh}</span>
+            <div className={s.coupleKh}>
+              <span className={s.metal}>{couple.groom.kh}</span>
+              <span className={s.amp}>និង</span>
+              <span className={s.metal}>{couple.bride.kh}</span>
+            </div>
+            <div className={s.coupleEn}>{couple.groom.en} &amp; {couple.bride.en}</div>
           </div>
         </header>
 
@@ -212,9 +231,11 @@ export default function Cover() {
         </div>
 
         <div className={s.foot}>
-          <div className={`${s.inviteLabel} ${s.rise}`} style={delay(2700)}>សូមគោរពអញ្ជើញ</div>
+          <div className={`${s.inviteLabel} ${s.rise}`} style={delay(2700)}>
+            <span className={s.flank} aria-hidden="true" />សូមគោរពអញ្ជើញ<span className={s.flank} aria-hidden="true" />
+          </div>
           <div className={`${s.guestName} ${s.rise}`} style={delay(2850)}>
-            {guest !== wedding.guestDefault ? guest : 'លោក លោកស្រី អ្នកនាងកញ្ញា'}
+            <span className={s.metal}>{guest !== wedding.guestDefault ? guest : 'លោក លោកស្រី អ្នកនាងកញ្ញា'}</span>
           </div>
           <div className={`${s.openWrap} ${s.rise}`} style={delay(3150)}>
             <button type="button" className={s.open} onClick={open}>

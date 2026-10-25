@@ -34,7 +34,8 @@ const rootStyle = [
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href={googleFontsHref(settings.khmerFont, settings.latinFont)} />
+    <!-- Moul: the ceremonial Khmer display face, for the cover's title. -->
+    <link rel="stylesheet" href={googleFontsHref(settings.khmerFont, settings.latinFont, 'Moul')} />
     <script is:inline>
       // Every visit starts at the top, behind the cover — don't restore the old scroll position on reload.
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
