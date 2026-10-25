@@ -3,8 +3,8 @@ import { wedding } from '@/content/wedding';
 /**
  * Background music. It starts when the guest opens the envelope (a tap, which browsers require
  * before playing sound), fades in, loops, and pauses while the page is hidden. The guest can mute
- * it from the cover or the dock; the choice is remembered. If the file is missing, `available`
- * turns false and the buttons hide.
+ * it from the cover or the dock; the choice is remembered. The buttons show whenever a file is set
+ * in settings.music (hidden only when it's '').
  */
 const MUTE_KEY = 'music-muted';
 const VOLUME = 0.6;
@@ -26,7 +26,7 @@ function load(): HTMLAudioElement | null {
   audio.loop = true;
   audio.preload = 'metadata';
   audio.volume = 0;
-  audio.addEventListener('error', () => { state.available = false; state.playing = false; emit(); });
+  audio.addEventListener('error', () => { state.playing = false; emit(); });
   audio.addEventListener('playing', () => { state.playing = true; emit(); });
   audio.addEventListener('pause', () => { state.playing = false; emit(); });
   document.addEventListener('visibilitychange', () => {
@@ -57,7 +57,7 @@ async function play() {
   try {
     await audio.play();
     ramp(VOLUME);
-  } catch { /* blocked or missing; the error handler hides the buttons if it's missing */ }
+  } catch { /* blocked, or the file isn't there yet */ }
 }
 
 export const music = {
